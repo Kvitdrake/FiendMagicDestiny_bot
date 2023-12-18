@@ -8,8 +8,10 @@ namespace FiendMagicDestiny_bot
 {
     internal class TaroArcans
     {
-        public int Id { get; set; }
+        public short Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public List<TaroArcans> arcans { get; set; }
+        public short[] Arcs;
     }
 }
