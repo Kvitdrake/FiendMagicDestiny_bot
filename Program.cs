@@ -19,6 +19,7 @@ global using System.Data.Common;
 global using System.Collections;
 global using Telegram.Bots.Http;
 using Telegram.Bots;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Fiend.Magic_bot
 {
@@ -35,10 +36,13 @@ namespace Fiend.Magic_bot
         {
             var message = update.Message;
             var chatId = message.Chat.Id;
+            var username = message.Chat.Username;
             if (update.Type == UpdateType.Message)
             {
                 //if() короче, завтра пропроси Машу написать с разнх акков сообщения, узнай чат-ид её. 
                 await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения. \r\t Введи отдельными сообщениями сначала имя, дату рождения, тг для связи, а потом просто через пробел все арканы человека.");
+                await botClient.SendTextMessageAsync(message.Chat.Id, $"Твой chatId: {chatId}");
+                Console.WriteLine($"{username}   ||   {chatId}") ;
                 //сообщение, которое придет послдним превращаешь в строку, строку делишь по символу пробела после чего конвертируешь части 
                 return;
             }
@@ -49,5 +53,16 @@ namespace Fiend.Magic_bot
         {
             throw new NotImplementedException();
         }
+    }
+    enum State
+    {
+        None, // новая запись, введи имя
+        Name, // введи дату рождения
+        Date_birth, // введи контакт
+        TgContact, // введи арканы
+        TarotCard, // 
+        Work, // 
+        Form, //
+        Finish //
     }
 }
