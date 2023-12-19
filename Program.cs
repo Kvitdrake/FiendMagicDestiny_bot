@@ -46,12 +46,12 @@ namespace Fiend.Magic_bot
                     _stateMachine = new StateMachine();
 
                 //if() короче, завтра пропроси Машу написать с разнх акков сообщения, узнай чат-ид её. 
-                    await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения. \r\n ");
-                    showId = true; //описано выше
-                
-                    await botClient.SendTextMessageAsync(message.Chat.Id, $"Твой chatId: {chatId}");
-                    Console.WriteLine($"{username}   ||   {chatId}");
-                    showId = true; //описано выше
+                await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения. \r\n ");
+                showId = true; //описано выше
+
+                await botClient.SendTextMessageAsync(message.Chat.Id, $"Твой chatId: {chatId}");
+                Console.WriteLine($"{username}   ||   {chatId}");
+                showId = true; //описано выше
                 switch (_stateMachine.GetCurrentState(chatId))
                 {
                     case State.None:
@@ -75,8 +75,7 @@ namespace Fiend.Magic_bot
                         break;
                     case State.TarotCard:
                         _stateMachine.TransformationString(chatId, message.Text);
-                        FormTaro newForm = new FormTaro();
-                        newForm.BuilderList();
+                        _stateMachine.BuilderList();
                         await botClient.SendTextMessageAsync(message.Chat.Id, "Всё идет по плану, я уже наклепал файлик. ПРислать краткое описание или сразу перейдём к дополнениям?)");
                         _stateMachine.ResetState(chatId);
                         _stateMachine.SetState(chatId, State.None);
@@ -85,7 +84,6 @@ namespace Fiend.Magic_bot
                 }
                 return;
             }
-
         }
 
         private static Task Error(ITelegramBotClient botClient, Exception exception, CancellationToken token)
