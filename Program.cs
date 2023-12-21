@@ -38,55 +38,91 @@ namespace Fiend.Magic_bot
             var message = update.Message;
             var chatId = message.Chat.Id;
             var username = message.Chat.Username;
+            bool showId = false;
+            bool showFirst = false;
             if (update.Type == UpdateType.Message)
             {
-                bool showId = false;
-                bool showFirst = false; // не работает или я не понял
                 if (_stateMachine == null)
                     _stateMachine = new StateMachine();
 
-                //if() короче, завтра пропроси Машу написать с разнх акков сообщения, узнай чат-ид её. 
-                await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения. \r\n ");
-                showId = true; //описано выше
-
-                await botClient.SendTextMessageAsync(message.Chat.Id, $"Твой chatId: {chatId}");
-                Console.WriteLine($"{username}   ||   {chatId}");
-                showId = true; //описано выше
-                switch (_stateMachine.GetCurrentState(chatId))
+                if (message.Text == "/start" && (chatId == 1002093832 || chatId == 184789122 || chatId == 5797888011))
                 {
-                    case State.None:
-                        await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, дату рождения, тг для связи, а потом просто через пробел все арканы человека. \n\r Жду имя)");
-                        _stateMachine.SetState(chatId, State.Name);
-                        break;
-                    case State.Name:
-                        _stateMachine.SaveName(chatId, message.Text);
-                        await botClient.SendTextMessageAsync(message.Chat.Id, "Замечательно, введи дату рождения");
-                        _stateMachine.SetState(chatId, State.Date_birth);
-                        break;
-                    case State.Date_birth:
-                        _stateMachine.SaveDateDitth(chatId, message.Text);
-                        await botClient.SendTextMessageAsync(message.Chat.Id, "Соранил! Теперь контакт и переходим к арканам");
-                        _stateMachine.SetState(chatId, State.TgContact);
-                        break;
-                    case State.TgContact:
-                        _stateMachine.SaveContact(chatId, message.Text);
-                        await botClient.SendTextMessageAsync(message.Chat.Id, "Отлично. Данные человека у меня есть, присылай арканы (через пробел), пожалуйста)");
-                        _stateMachine.SetState(chatId, State.TarotCard);
-                        break;
-                    case State.TarotCard:
-                        _stateMachine.TransformationString(chatId, message.Text);
-                        _stateMachine.BuilderList();
-                        await botClient.SendTextMessageAsync(message.Chat.Id, "Всё идет по плану, я уже наклепал файлик. ПРислать краткое описание или сразу перейдём к дополнениям?)");
-                        _stateMachine.ResetState(chatId);
-                        _stateMachine.SetState(chatId, State.None);
-                        break;
+                    FirstShow(botClient, update, token);
 
                 }
+                if (chatId == 1002093832 || chatId == 184789122 || chatId == 5797888011)
+                {
+                    var replyKeyboardMarkup1 = new ReplyKeyboardMarkup(new[]
+                                {
+                                    new KeyboardButton[]
+                                        {
+                                            MessageResponses.GenderG,
+                                            MessageResponses.GenderM
+                                        }
+                                    });
+                    switch (_stateMachine.GetCurrentState(chatId))
+                    {
+                        
+                        case State.None:
+                            await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, дату рождения, тг для связи, а потом просто через пробел все арканы человека. \n\r Жду имя)");
+                            _stateMachine.SetState(chatId, State.Name);
+                            break;
+                        case State.Name:
+                            _stateMachine.SaveName(chatId, message.Text);
+                            await botClient.SendTextMessageAsync(message.Chat.Id, "Замечательно, введи дату рождения");
+                            _stateMachine.SetState(chatId, State.Date_birth);
+                            break;
+                        case State.Date_birth:
+                                _stateMachine.SaveDateDitth(chatId, message.Text);
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Пеперь введи пол человека", replyMarkup: replyKeyboardMarkup1);
+                                _stateMachine.SetState(chatId, State.Gender);
+                             break;
+                        case State.Gender:
+                                _stateMachine.SaveGender(chatId, message.Text);
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Отлично. Данные человека у меня есть, присылай арканы (через пробел), пожалуйста)", replyMarkup: new ReplyKeyboardRemove());
+                                _stateMachine.SetState(chatId, State.TarotCard);
+                            break;
+                        case State.TarotCard:
+                            try
+                            {
+                                _stateMachine.TransformationString(chatId, message.Text);
+                                _stateMachine.BuilderList();
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё идет по плану, я уже наклепал файлик. Напиши ");
+                                _stateMachine.ResetState(chatId);
+                                _stateMachine.SetState(chatId, State.None);
+                            }
+                            catch(FormatException)
+                            {
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Ты прям совсем что-то не то написала, перепроверь, пжл, и пришли заново");
+                            }
+                            catch
+                            {
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Некорректное число");
+                            }
+                            
+                            break;
+                        case State.Add:
+
+                            break;
+
+                    }
+                }
+                else
+                {
+                    await botClient.SendTextMessageAsync(message.Chat.Id, "Упс! Я тебя не знаю, поэтому пользоваться этим ботом ты не можешь.");
+                }
                 return;
+
             }
         }
+        async static Task FirstShow(ITelegramBotClient botClient, Update update, CancellationToken token)
+        {
+            var message = update.Message;
+            var chatId = message.Chat.Id;
+            await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения. \r\n Для перезапуска бота");
+        }
 
-        private static Task Error(ITelegramBotClient botClient, Exception exception, CancellationToken token)
+            private static Task Error(ITelegramBotClient botClient, Exception exception, CancellationToken token)
         {
             throw new NotImplementedException();
         }
@@ -96,10 +132,9 @@ namespace Fiend.Magic_bot
         None, // новая запись, введи имя
         Name, // введи дату рождения
         Date_birth, // введи контакт
-        TgContact, // введи арканы
+        Gender,
         TarotCard, // 
-        Work, // 
-        Form, //
+        Add,
         Finish //
     }
 }

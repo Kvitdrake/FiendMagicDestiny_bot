@@ -1,9 +1,11 @@
 ﻿using Fiend.Magic_bot;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FiendMagicDestiny_bot
 {
@@ -12,12 +14,14 @@ namespace FiendMagicDestiny_bot
         private protected static Dictionary<long, State> userStates;
         private protected static Dictionary<long, string> _Name;
         private protected static Dictionary<long, string> _DateBirth;
+        private protected static Dictionary<long, string> _Gender;
         private protected static Dictionary<long, string> _Contact;
         public StateMachine()
         {
             userStates = new Dictionary<long, State>();
             _Name = new Dictionary<long, string>();
             _DateBirth = new Dictionary<long, string>();
+            _Gender = new Dictionary<long, string>();
             _Contact = new Dictionary<long, string>();
         }
         public State GetCurrentState(long chatId)
@@ -45,67 +49,84 @@ namespace FiendMagicDestiny_bot
             else
                 _DateBirth.Add(chatId, datebirth);
         }
-        public void SaveContact(long chatId, string contact)
+        public void SaveGender(long chatId, string gender)
         {
-            if (_Contact.ContainsKey(chatId))
-                _Contact[chatId] = contact;
+            if (_Gender.ContainsKey(chatId))
+            {
+                if (gender == "👨Мужчина")
+                    gender = "М";
+                else if (gender == "👩Женщина")
+                    gender = "Ж";
+                else
+                {
+                    throw new Exception();
+                }
+                _Gender[chatId] = gender;
+            }
             else
-                _Contact.Add(chatId, contact);
+                _Gender.Add(chatId, gender);
         }
-        /*public void SaveTarostring(long chatId, string contact)
-        {
-            if (_Contact.ContainsKey(chatId))
-                _Contact[chatId] = contact;
-            else
-                _Contact.Add(chatId, contact);
-        }*/
 
         public void TransformationString(long chatId, string tarostring)
         {
             string allArcs = tarostring;
-            string[] strArc = allArcs.Split(' ');
-            Arcs = Array.ConvertAll(strArc, short.Parse); //сюда try-catch!!!
+            string[] strArc = allArcs.Split(new char[] {}, StringSplitOptions.RemoveEmptyEntries);
+            try
+            {
+                Arcs = Array.ConvertAll(strArc, short.Parse);
+            }
+            catch (FormatException ex) 
+            {
+                Console.WriteLine("ошибка при преобразовани строки" + ex);
+                throw;
+            }
+
             foreach (var num in Arcs)
             {
+                if (num >= 23 || num < 0)
+                {
+                    Console.WriteLine($"Ошибка, число {num} < 0 или > 22");
+                    throw new Exception ($"Некорректное число {num}");
+                }
+
                 Console.WriteLine($"{num}");
             }
         }
         public void BuilderList()
         {
-            arcans = new List<TaroArcans>()
+            Dictionary<int, TaroArcans> Arcans = new Dictionary<int, TaroArcans>
             {
-
-                    new TaroArcans{Id = 0, Name = "Дурак/Шут", Description = "*описание от тебя*"}, //тут же много тем. в TaroArcs сделай описание списком из других разделов
-                    new TaroArcans{Id = 1, Name = "Маг", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 2, Name = "Жрица", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 3, Name = "Императрица", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 4, Name = "Император", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 5, Name = "Иерофант", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 6, Name = "Влюбленные", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 7, Name = "Колесница", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 8, Name = "Правосудие", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 9, Name = "Отшельник", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 10, Name = "Колесо фортуны", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 11, Name = "Сила", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 12, Name = "Повешенный", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 13, Name = "Смерть", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 14, Name = "Умеренность", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 15, Name = "Дьявол", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 16, Name = "Башня", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 17, Name = "Звезда", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 18, Name = "Луна", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 19, Name = "Солнце", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 20, Name = "Суд", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 21, Name = "Мир", Description = "*описание от тебя*"},
-                    new TaroArcans{Id = 22, Name = "Дурак/Шут", Description = "*описание от тебя*"}
+                { 0, new TaroArcans { Name = "Дурак/Шут", Description = "*описание от тебя*" } },
+                { 1, new TaroArcans { Name = "Маг", Description = "*описание от тебя*" } },
+                { 2, new TaroArcans { Name = "Жрица", Description = "*описание от тебя*" } },
+                { 3, new TaroArcans { Name = "Императрица", Description = "*описание от тебя*" } },
+                { 4, new TaroArcans { Name = "Император", Description = "*описание от тебя*" } },
+                { 5, new TaroArcans { Name = "Иерофант", Description = "*описание от тебя*" } },
+                { 6, new TaroArcans { Name = "Влюбленные", Description = "*описание от тебя*" } },
+                { 7, new TaroArcans { Name = "Колесница", Description = "*описание от тебя*" } },
+                { 8, new TaroArcans { Name = "Правосудие", Description = "*описание от тебя*" } },
+                { 9, new TaroArcans { Name = "Отшельник", Description = "*описание от тебя*" } },
+                { 10, new TaroArcans { Name = "Колесо фортуны", Description = "*описание от тебя*" } },
+                { 11, new TaroArcans { Name = "Сила", Description = "*описание от тебя*" } },
+                { 12, new TaroArcans { Name = "Повешенный", Description = "*описание от тебя*" } },
+                { 13, new TaroArcans { Name = "Смерть", Description = "*описание от тебя*" } },
+                { 14, new TaroArcans { Name = "Умеренность", Description = "*описание от тебя*" } },
+                { 15, new TaroArcans { Name = "Дьявол", Description = "*описание от тебя*" } },
+                { 16, new TaroArcans { Name = "Башня", Description = "*описание от тебя*" } },
+                { 17, new TaroArcans { Name = "Звезда", Description = "*описание от тебя*" } },
+                { 18, new TaroArcans { Name = "Луна", Description = "*описание от тебя*" } },
+                { 19, new TaroArcans { Name = "Солнце", Description = "*описание от тебя*" } },
+                { 20, new TaroArcans { Name = "Суд", Description = "*описание от тебя*" } },
+                { 21, new TaroArcans { Name = "Мир", Description = "*описание от тебя*" } },
+                { 22, new TaroArcans { Name = "Дурак/Шут", Description = "*описание от тебя*" } }
             };
-            var result = from obj in arcans
-                         join Id in Arcs on obj.Id equals Id
-                         select obj;
-
-            foreach (var obj in result)
+            foreach (short obj in Arcs)
             {
-                Console.WriteLine($"{obj.Name} || {obj.Description}");
+                if (Arcans.ContainsKey(obj))
+                {
+                    Console.WriteLine( $"{obj}  -  {Arcans[obj].Name}   ||   {Arcans[obj].Description}");
+                }
+
             }
         }
         public void ResetState(long chatId)
@@ -116,8 +137,8 @@ namespace FiendMagicDestiny_bot
                 _Name.Remove(chatId);
             if (_DateBirth.ContainsKey(chatId))
                 _DateBirth.Remove(chatId);
-            if (_Contact.ContainsKey(chatId))
-                _Contact.Remove(chatId);
+            if (_Gender.ContainsKey(chatId))
+                _Gender.Remove(chatId);
         }
     }
 }
