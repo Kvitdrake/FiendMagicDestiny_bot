@@ -19,7 +19,6 @@ global using System.Data.Common;
 global using System.Collections;
 global using Telegram.Bots.Http;
 using Telegram.Bots;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using FiendMagicDestiny_bot;
 
 namespace Fiend.Magic_bot
@@ -36,83 +35,84 @@ namespace Fiend.Magic_bot
         async static Task Update(ITelegramBotClient botClient, Update update, CancellationToken token)
         {
             var message = update.Message;
-            var chatId = message.Chat.Id;
-            var username = message.Chat.Username;
-            bool showId = false;
-            bool showFirst = false;
-            if (update.Type == UpdateType.Message)
+            if (message != null && message.Chat != null)
             {
-                if (_stateMachine == null)
-                    _stateMachine = new StateMachine();
+                var chatId = message.Chat.Id;
 
-                if (message.Text == "/start" && (chatId == 1002093832 || chatId == 184789122 || chatId == 5797888011))
+                var username = message.Chat.Username;
+                if (update.Type == UpdateType.Message)
                 {
-                    FirstShow(botClient, update, token);
+                    if (_stateMachine == null)
+                        _stateMachine = new StateMachine();
 
-                }
-                if (chatId == 1002093832 || chatId == 184789122 || chatId == 5797888011)
-                {
-                    var replyKeyboardMarkup1 = new ReplyKeyboardMarkup(new[]
-                                {
+                    if (message.Text == "/start" && (chatId == 1002093832 || chatId == 184789122 || chatId == 5797888011))
+                    {
+                        FirstShow(botClient, update, token);
+
+                    }
+                    if (chatId == 1002093832 || chatId == 184789122 || chatId == 5797888011)
+                    {
+                        var replyKeyboardMarkup1 = new ReplyKeyboardMarkup(new[]
+                                    {
                                     new KeyboardButton[]
                                         {
                                             MessageResponses.GenderG,
                                             MessageResponses.GenderM
                                         }
                                     });
-                    switch (_stateMachine.GetCurrentState(chatId))
-                    {
-                        
-                        case State.None:
-                            await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, дату рождения, тг для связи, а потом просто через пробел все арканы человека. \n\r Жду имя)");
-                            _stateMachine.SetState(chatId, State.Name);
-                            break;
-                        case State.Name:
-                            _stateMachine.SaveName(chatId, message.Text);
-                            await botClient.SendTextMessageAsync(message.Chat.Id, "Замечательно, введи дату рождения");
-                            _stateMachine.SetState(chatId, State.Date_birth);
-                            break;
-                        case State.Date_birth:
-                                _stateMachine.SaveDateDitth(chatId, message.Text);
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Пеперь введи пол человека", replyMarkup: replyKeyboardMarkup1);
+                        switch (_stateMachine.GetCurrentState(chatId))
+                        {
+
+                            case State.None:
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, дату рождения, тг для связи, а потом просто через пробел все арканы человека. \n\r Жду имя)");
+                                _stateMachine.SetState(chatId, State.Name);
+                                break;
+                            case State.Name:
+                                _stateMachine.SaveName(chatId, message.Text);
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Замечательно, теперь введи пол человека", replyMarkup: replyKeyboardMarkup1);
                                 _stateMachine.SetState(chatId, State.Gender);
-                             break;
-                        case State.Gender:
+                                break;
+                            case State.Gender:
                                 _stateMachine.SaveGender(chatId, message.Text);
                                 await botClient.SendTextMessageAsync(message.Chat.Id, "Отлично. Данные человека у меня есть, присылай арканы (через пробел), пожалуйста)", replyMarkup: new ReplyKeyboardRemove());
                                 _stateMachine.SetState(chatId, State.TarotCard);
-                            break;
-                        case State.TarotCard:
-                            try
-                            {
-                                _stateMachine.TransformationString(chatId, message.Text);
-                                _stateMachine.BuilderList();
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё идет по плану, я уже наклепал файлик. Напиши ");
+                                break;
+                            case State.TarotCard:
+                                try
+                                {
+                                    _stateMachine.TransformationString(chatId, message.Text);
+                                    _stateMachine.BuilderList(chatId);
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Всё идет по плану, я уже наклепал файлик. Напиши свое дополнение и всё будет готово.");
+
+                                    _stateMachine.SetState(chatId, State.Add);
+                                }
+                                catch (FormatException)
+                                {
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Ты прям совсем что-то не то написала, перепроверь, пжл, и пришли заново");
+                                }
+                                catch
+                                {
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Некорректное число");
+                                }
+
+                                break;
+                            case State.Add:
+                                _stateMachine.SaveAddition(chatId, message.Text);
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)");
+                                _stateMachine.SendAddition(botClient, chatId);
                                 _stateMachine.ResetState(chatId);
                                 _stateMachine.SetState(chatId, State.None);
-                            }
-                            catch(FormatException)
-                            {
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Ты прям совсем что-то не то написала, перепроверь, пжл, и пришли заново");
-                            }
-                            catch
-                            {
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Некорректное число");
-                            }
-                            
-                            break;
-                        case State.Add:
+                                break;
 
-                            break;
-
+                        }
                     }
-                }
-                else
-                {
-                    await botClient.SendTextMessageAsync(message.Chat.Id, "Упс! Я тебя не знаю, поэтому пользоваться этим ботом ты не можешь.");
-                }
-                return;
+                    else
+                    {
+                        await botClient.SendTextMessageAsync(message.Chat.Id, "Упс! Я тебя не знаю, поэтому пользоваться этим ботом ты не можешь.");
+                    }
+                    return;
 
+                }
             }
         }
         async static Task FirstShow(ITelegramBotClient botClient, Update update, CancellationToken token)
