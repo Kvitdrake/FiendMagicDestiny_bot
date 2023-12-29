@@ -298,7 +298,6 @@ namespace FiendMagicDestiny_bot
             AddCombination(19, 20, "Солнце- Суд – большая любовь к детям, сильное желание иметь семью. Вообще семья - самая большая ценность в жизни. \r\n Солнце стоит в связке с Судом, поэтому позитивное Солнце приглушено под давлением Суда. Это как в произведениях Булгакова: отражена мрачность и безысходность, но тем не менее, деятельность человека выражена через катарсис, очищение.");
 
 
-
             WriteToFile(fileName, instructions);
             foreach (short obj in Arcs)
             {
@@ -323,16 +322,17 @@ namespace FiendMagicDestiny_bot
                     foreach (short obj2 in Arcs)
                     {
 
-
-                        string combinationKey = $"{obj}-{obj2}";
-                        if (arcan.Combinations.ContainsKey(combinationKey))
+                        if (obj != obj2)
                         {
-                            string data = $"   {arcan.Combinations[combinationKey]}";
-                            WriteToFile(fileName, data);
-                            Console.WriteLine($"   {arcan.Combinations[combinationKey]}");
+                            string combinationKey = $"{obj}-{obj2}";
+                            if (arcan.Combinations.ContainsKey(combinationKey))
+                            {
+                                string data = $"   {arcan.Combinations[combinationKey]}";
+                                WriteToFile(fileName, data);
+                                Console.WriteLine($"   {arcan.Combinations[combinationKey]}");
 
+                            }
                         }
-
 
 
 
