@@ -80,8 +80,8 @@ namespace Fiend.Magic_bot
                             case State.TarotCard:
                                 try
                                 {
-                                    _stateMachine.TransformationString(chatId, message.Text);
-                                    _stateMachine.BuilderList(chatId);
+                                    _stateMachine.TransformationString(chatId, message.Text); //
+                                    _stateMachine.BuilderList(chatId); //?
                                     await botClient.SendTextMessageAsync(message.Chat.Id, "Всё идет по плану, я уже наклепал файлик. Напиши свое дополнение и всё будет готово.");
 
                                     _stateMachine.SetState(chatId, State.Add);

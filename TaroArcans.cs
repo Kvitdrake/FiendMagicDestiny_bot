@@ -14,7 +14,7 @@ namespace FiendMagicDestiny_bot
         public string DescriptionM { get; set; }
         public string DescriptionG { get; set; }
         public Dictionary<string, string> Combinations { get; set; }
-        public static short[] Arcs;
+        
 
         public TaroArcans(string name, string descriptionM, string descriptionG)
         {
