@@ -89,7 +89,7 @@ namespace FiendMagicDestiny_bot
             string[] strArc = allArcs.Split(new char[] { }, StringSplitOptions.RemoveEmptyEntries);
             try
             {
-                    Arcs = Array.ConvertAll(strArc, short.Parse);
+                Arcs = Array.ConvertAll(strArc, short.Parse);
             }
             catch (FormatException ex)
             {
@@ -99,12 +99,12 @@ namespace FiendMagicDestiny_bot
 
             foreach (var num in Arcs)
             {
-                
+
                 if (num > 23 || num <= 0)
                 {
                     Console.WriteLine($"Ошибка, число {num} < 0 или > 22");
                     throw new Exception("Некорректное число");
-                    
+
                 }
                 Console.WriteLine($"{num}");
             }
@@ -128,17 +128,25 @@ namespace FiendMagicDestiny_bot
             if (Arcans.ContainsKey(arcanNumber1) && Arcans.ContainsKey(arcanNumber2))
             {
                 string combinationKey = $"{arcanNumber1}-{arcanNumber2}";
+
                 if (!Arcans[arcanNumber1].Combinations.ContainsKey(combinationKey))
-                Arcans[arcanNumber1].Combinations.Add(combinationKey, combinationDescription);
+                    Arcans[arcanNumber1].Combinations.Add(combinationKey, combinationDescription);
             }
         }
         public void AddCombination(short arcanNumber1, short arcanNumber2, short arcanNumber3, string combinationDescription)
         {
             if (Arcans.ContainsKey(arcanNumber1) && Arcans.ContainsKey(arcanNumber2) && Arcans.ContainsKey(arcanNumber3))
             {
-                string combinationKey = $"{arcanNumber1}-{arcanNumber2}-{arcanNumber3}";
+                //string combinationKey = $"{arcanNumber1}-{arcanNumber2}-{arcanNumber3}";
+                short[] sortedArcanNumbers = { arcanNumber1, arcanNumber2, arcanNumber3 };
+                Array.Sort(sortedArcanNumbers);
+
+                string combinationKey = $"{sortedArcanNumbers[0]}-{sortedArcanNumbers[1]}-{sortedArcanNumbers[2]}";
+
                 if (!Arcans[arcanNumber1].Combinations.ContainsKey(combinationKey))
+                {
                     Arcans[arcanNumber1].Combinations.Add(combinationKey, combinationDescription);
+                }
             }
         }
         public async Task SendAddition(ITelegramBotClient botClient, long chatId)
@@ -146,7 +154,7 @@ namespace FiendMagicDestiny_bot
             string fileName = $"{StateMachine._Name[chatId]}_Предназначение.doc";
             string fileName2 = $"ДОПОЛНЕНИЕ: {StateMachine._Name[chatId]}_Предназначение.doc";
 
-            string data = $"Дополнение: \r\n {_Addition[chatId]}";
+            string data = $"\r\n\r\n\r\n\r\n\r\n\r\n    Дополнение: \r\n {_Addition[chatId]}";
             WriteToFile(fileName, data);
             WriteToFile(fileName2, data);
             await SendingFile(botClient, chatId, fileName);
@@ -157,6 +165,7 @@ namespace FiendMagicDestiny_bot
 
         public void BuilderList(long chatId)
         {
+            HashSet<string> addedCombinations = new HashSet<string>();
             string fileName = $"{StateMachine._Name[chatId]}_Предназначение.doc";
             string instructions = "Правила работы с информацией.\r\n\r\n   По дате рождения я рассчитываю 9 арканов человека, соответствующих его дате рождения и влияющих на его личность всю жизнь.\r\n\r\n   Каждый аркан - одна из 9 частей личности, собирающаяся в итоге в уникальность отдельно взятого человека.\r\n\r\n   У каждого аркана есть уровни отработки. Большинство арканов я делю на “плюсовую отработку” и “минусовую”, хотя есть арканы с многоуровневой отработкой.\r\n   Плюсовая - это то, как НАДО отрабатывать аркан, чтобы кармические последствия были только положительными.\r\n\r\n   Минусовая влечёт за собой отрицательные кармические последствия (болезни, повторяющиеся негативные ситуации, токсичные эмоции, сложные отношения с людьми, внезапные потери денег и тп, и тд).\r\n\r\n   “Люди-архетипы аркана” - те, кто является наиболее ярким носителем аркана. Например, у аркана Суд это будет гробовщик или психоаналитик, у Иерофанта - священнослужитель (истинный, не те, что сейчас в церквях), у Императрицы - Мать с большой буквы.\r\n\r\n   ПРОФЕССИЯ.\r\n   Вы можете выбрать ЛЮБУЮ профессию ЛЮБОГО аркана, ниже перечисленного*, НО!\r\n   Вы должны понимать и стремиться к тому, чтобы остальные арканы покрывали выбранную деятельность. Чтобы не было выпадания какого-то аркана, иначе он автоматически уйдет в негатив.\r\n\r\n   Также я не сторонник того, чтобы профессию выбрать по четырем-пяти арканам, а хобби - по оставшимся, поскольку начнется раздвоение деятельности, влияющее негативно на сознание: работу я ненавижу, но и хобби тоже (что-то в этом духе).\r\n\r\n*если иное не указано в тексте.\r\n\r\n\r\n\r\n\r\n\r\n";
             AddArcan(1, "   МАГ", "*описание от тебя аркана для мужчины", "*описание от тебя аркана для женщины");
@@ -297,50 +306,79 @@ namespace FiendMagicDestiny_bot
 
             AddCombination(19, 20, "Солнце- Суд – большая любовь к детям, сильное желание иметь семью. Вообще семья - самая большая ценность в жизни. \r\n Солнце стоит в связке с Судом, поэтому позитивное Солнце приглушено под давлением Суда. Это как в произведениях Булгакова: отражена мрачность и безысходность, но тем не менее, деятельность человека выражена через катарсис, очищение.");
 
-
-
+            Dictionary<short, short> repeats = new Dictionary<short, short>();
+            foreach (short obj in Arcs)
+            {
+                if (repeats.ContainsKey(obj))
+                    repeats[obj]++;
+                else
+                {
+                    repeats[obj] = 1;
+                }
+            }
             WriteToFile(fileName, instructions);
             foreach (short obj in Arcs)
             {
+
                 if (Arcans.ContainsKey(obj))
                 {
+                    short rep = 1;
+                    foreach (var kvp in repeats)
+                    {
+                        short count = kvp.Value;
+                        if (repeats.ContainsKey(obj) && count != rep)
+                        {
+                            rep = count;
+                        }
+                    }
                     TaroArcans arcan = Arcans[obj];
-                    if (_Gender[chatId] == "👩Женщина")
-                    {
-                        string data = $"{arcan.Name} \r\n {arcan.DescriptionG}\r\n\r\n\r\n";
-                        Console.WriteLine($"{arcan.Name}   ||    {arcan.DescriptionG}");
-                        WriteToFile(fileName, data);
-                    }
-                    if (_Gender[chatId] == "👨Мужчина")
-                    {
-                        string data = $"{arcan.Name} \r\n {arcan.DescriptionM}\r\n\r\n\r\n";
-                        Console.WriteLine($"{arcan.Name}   ||    {arcan.DescriptionM}");
-                        WriteToFile(fileName, data);
-
-                    }
+                    string desc = (_Gender[chatId] == "👩Женщина") ? arcan.DescriptionG: arcan.DescriptionM;
+                    string data = "";
+                        if (rep != 1)
+                            data = $"{arcan.Name} ({rep}) \r\n {desc}\r\n\r\n\r\n";
+                        else
+                            data = $"{arcan.Name} \r\n {desc}\r\n\r\n\r\n";
+                        
+                    WriteData(fileName, data);
                     /*if (arcanOrder.ContainsKey(obj) && arcanOrder[obj] == 1)
                     {*/
+                    bool isFirst = true;
                     foreach (short obj2 in Arcs)
                     {
 
-
-                        string combinationKey = $"{obj}-{obj2}";
-                        if (arcan.Combinations.ContainsKey(combinationKey))
+                        if (repeats[obj] > 1 || (repeats[obj] == 1 && obj2 != obj))
                         {
-                            string data = $"   {arcan.Combinations[combinationKey]}";
-                            WriteToFile(fileName, data);
-                            Console.WriteLine($"   {arcan.Combinations[combinationKey]}");
+                            if (isFirst)
+                            {
+                                string combinationKey = $"{obj}-{obj2}";
+                                if (arcan.Combinations.ContainsKey(combinationKey) && !addedCombinations.Contains(combinationKey))
+                                {
+                                    data = $"   {arcan.Combinations[combinationKey]}";
+                                    WriteToFile(fileName, data);
+                                    Console.WriteLine($"   {arcan.Combinations[combinationKey]}");
+
+                                    // Добавление сочетания в HashSet, чтобы избежать повторного добавления
+                                    addedCombinations.Add(combinationKey);
+                                    isFirst = false;
+                                }
+
+                            }
+
+
 
                         }
-
-
-
-
+                        //}
                     }
-                    //}
-                }
-            }
 
+                }
+
+            }
+            foreach()
+        }
+        public void WriteData(string fileName, string data)
+        {
+            Console.WriteLine(data);
+            WriteToFile(fileName, data);
         }
     }
 }
