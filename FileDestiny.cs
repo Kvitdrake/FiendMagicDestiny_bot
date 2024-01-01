@@ -19,6 +19,14 @@ namespace FiendMagicDestiny_bot
                 writer.WriteLine(data);
             }
         }
+        public void WriteToFile(string fileName, string data, string dataComb)
+        {
+            var FilePath = Path.Combine(Environment.CurrentDirectory, fileName);
+            using (StreamWriter writer = new StreamWriter(FilePath, true))
+            {
+                writer.WriteLine(data, dataComb);
+            }
+        }
         public async Task SendingFile(ITelegramBotClient botClient, long chatId, string fileName)
         {
             var FilePath = Path.Combine(Environment.CurrentDirectory, fileName);

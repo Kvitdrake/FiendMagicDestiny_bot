@@ -165,7 +165,7 @@ namespace FiendMagicDestiny_bot
 
         public void BuilderList(long chatId)
         {
-            HashSet<string> addedCombinations = new HashSet<string>();
+            
             string fileName = $"{StateMachine._Name[chatId]}_Предназначение.doc";
             string instructions = "Правила работы с информацией.\r\n\r\n   По дате рождения я рассчитываю 9 арканов человека, соответствующих его дате рождения и влияющих на его личность всю жизнь.\r\n\r\n   Каждый аркан - одна из 9 частей личности, собирающаяся в итоге в уникальность отдельно взятого человека.\r\n\r\n   У каждого аркана есть уровни отработки. Большинство арканов я делю на “плюсовую отработку” и “минусовую”, хотя есть арканы с многоуровневой отработкой.\r\n   Плюсовая - это то, как НАДО отрабатывать аркан, чтобы кармические последствия были только положительными.\r\n\r\n   Минусовая влечёт за собой отрицательные кармические последствия (болезни, повторяющиеся негативные ситуации, токсичные эмоции, сложные отношения с людьми, внезапные потери денег и тп, и тд).\r\n\r\n   “Люди-архетипы аркана” - те, кто является наиболее ярким носителем аркана. Например, у аркана Суд это будет гробовщик или психоаналитик, у Иерофанта - священнослужитель (истинный, не те, что сейчас в церквях), у Императрицы - Мать с большой буквы.\r\n\r\n   ПРОФЕССИЯ.\r\n   Вы можете выбрать ЛЮБУЮ профессию ЛЮБОГО аркана, ниже перечисленного*, НО!\r\n   Вы должны понимать и стремиться к тому, чтобы остальные арканы покрывали выбранную деятельность. Чтобы не было выпадания какого-то аркана, иначе он автоматически уйдет в негатив.\r\n\r\n   Также я не сторонник того, чтобы профессию выбрать по четырем-пяти арканам, а хобби - по оставшимся, поскольку начнется раздвоение деятельности, влияющее негативно на сознание: работу я ненавижу, но и хобби тоже (что-то в этом духе).\r\n\r\n*если иное не указано в тексте.\r\n\r\n\r\n\r\n\r\n\r\n";
             AddArcan(1, "   МАГ", "*описание от тебя аркана для мужчины", "*описание от тебя аркана для женщины");
@@ -306,22 +306,30 @@ namespace FiendMagicDestiny_bot
 
             AddCombination(19, 20, "Солнце- Суд – большая любовь к детям, сильное желание иметь семью. Вообще семья - самая большая ценность в жизни. \r\n Солнце стоит в связке с Судом, поэтому позитивное Солнце приглушено под давлением Суда. Это как в произведениях Булгакова: отражена мрачность и безысходность, но тем не менее, деятельность человека выражена через катарсис, очищение.");
 
+
+
+
+
+            HashSet<string> addedCombinations = new HashSet<string>();
             Dictionary<short, short> repeats = new Dictionary<short, short>();
-            foreach (short obj in Arcs)
-            {
-                if (repeats.ContainsKey(obj))
-                    repeats[obj]++;
-                else
-                {
-                    repeats[obj] = 1;
-                }
-            }
+
             WriteToFile(fileName, instructions);
+            foreach(short obj in Arcs)
+            {if (repeats.ContainsKey(obj))
+                        repeats[obj]++;
+                    else
+                    {
+                        repeats[obj] = 1;
+                    }
+
+            }
+
             foreach (short obj in Arcs)
             {
 
                 if (Arcans.ContainsKey(obj))
                 {
+                    
                     short rep = 1;
                     foreach (var kvp in repeats)
                     {
@@ -340,45 +348,35 @@ namespace FiendMagicDestiny_bot
                             data = $"{arcan.Name} \r\n {desc}\r\n\r\n\r\n";
                         
                     WriteData(fileName, data);
-                    /*if (arcanOrder.ContainsKey(obj) && arcanOrder[obj] == 1)
-                    {*/
-                    bool isFirst = true;
+                    
+                    bool isFirstCom = true;
                     foreach (short obj2 in Arcs)
                     {
-
                         if (repeats[obj] > 1 || (repeats[obj] == 1 && obj2 != obj))
                         {
-                            if (isFirst)
+                            if (isFirstCom)
                             {
                                 string combinationKey = $"{obj}-{obj2}";
                                 if (arcan.Combinations.ContainsKey(combinationKey) && !addedCombinations.Contains(combinationKey))
                                 {
-                                    data = $"   {arcan.Combinations[combinationKey]}";
-                                    WriteToFile(fileName, data);
-                                    Console.WriteLine($"   {arcan.Combinations[combinationKey]}");
+                                    string dataAdd = $"   {arcan.Combinations[combinationKey]}";
+                                    WriteData(fileName, dataAdd);
 
                                     // Добавление сочетания в HashSet, чтобы избежать повторного добавления
                                     addedCombinations.Add(combinationKey);
-                                    isFirst = false;
+                                    isFirstCom = false;
                                 }
-
                             }
-
-
-
                         }
-                        //}
                     }
-
                 }
-
             }
-            foreach()
         }
         public void WriteData(string fileName, string data)
         {
             Console.WriteLine(data);
             WriteToFile(fileName, data);
         }
+
     }
 }
