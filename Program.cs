@@ -98,10 +98,24 @@ namespace Fiend.Magic_bot
                                 break;
                             case State.Add:
                                 _stateMachine.SaveAddition(chatId, message.Text);
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)");
                                 _stateMachine.SendAddition(botClient, chatId);
+
+                                var replyKeyboardMarkup2 = new ReplyKeyboardMarkup(new[]
+                                   {
+                                    new KeyboardButton[]
+                                        {
+                                            MessageResponses.Add,
+                                            MessageResponses.Test
+                                        }
+                                    });
+
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)", replyMarkup: replyKeyboardMarkup2);
                                 _stateMachine.ResetState(chatId);
-                                _stateMachine.SetState(chatId, State.None);
+                                if (message.Text == "Тестовый режим")
+                                    _stateMachine.SetState(chatId, State.Gender);
+                                else
+                                    _stateMachine.SetState(chatId, State.None);
+
                                 break;
 
                         }
@@ -122,7 +136,7 @@ namespace Fiend.Magic_bot
             await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения. \r\n Для перезапуска бота");
         }
 
-            private static Task Error(ITelegramBotClient botClient, Exception exception, CancellationToken token)
+        private static Task Error(ITelegramBotClient botClient, Exception exception, CancellationToken token)
         {
             throw new NotImplementedException();
         }
