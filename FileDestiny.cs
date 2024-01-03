@@ -4,27 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+using Color = DocumentFormat.OpenXml.Wordprocessing.Color;
 
 namespace FiendMagicDestiny_bot
 {
-    internal class FileDestiny 
+    internal class FileDestiny
     {
 
 
         public void WriteToFile(string fileName, string data)
         {
             var FilePath = Path.Combine(Environment.CurrentDirectory, fileName);
-            using(StreamWriter writer = new StreamWriter(FilePath, true))
+            using (StreamWriter writer = new StreamWriter(FilePath, true, Encoding.UTF8))
             {
                 writer.WriteLine(data);
-            }
-        }
-        public void WriteToFile(string fileName, string data, string dataComb)
-        {
-            var FilePath = Path.Combine(Environment.CurrentDirectory, fileName);
-            using (StreamWriter writer = new StreamWriter(FilePath, true))
-            {
-                writer.WriteLine(data, dataComb);
             }
         }
         public async Task SendingFile(ITelegramBotClient botClient, long chatId, string fileName)
@@ -47,6 +43,8 @@ namespace FiendMagicDestiny_bot
 
 
         }
+
+
 
     }
 }

@@ -98,7 +98,7 @@ namespace Fiend.Magic_bot
                                 break;
                             case State.Add:
                                 _stateMachine.SaveAddition(chatId, message.Text);
-                                _stateMachine.SendAddition(botClient, chatId);
+
 
                                 var replyKeyboardMarkup2 = new ReplyKeyboardMarkup(new[]
                                    {
@@ -109,13 +109,21 @@ namespace Fiend.Magic_bot
                                         }
                                     });
 
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)", replyMarkup: replyKeyboardMarkup2);
-                                _stateMachine.ResetState(chatId);
-                                if(message.Text == "Тестовый режим")
+
+                                if (message.Text == "Тестовый режим")
+                                {
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)", replyMarkup: replyKeyboardMarkup2);
+                                    _stateMachine.SendAddition(botClient, chatId);
+                                    _stateMachine.ResetState(chatId);
                                     _stateMachine.SetState(chatId, State.Gender);
+                                }
                                 else
-                                _stateMachine.SetState(chatId, State.None);
-                                
+                                {
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)", replyMarkup: replyKeyboardMarkup2);
+                                    _stateMachine.SendAddition(botClient, chatId);
+                                    _stateMachine.ResetState(chatId);
+                                    _stateMachine.SetState(chatId, State.None);
+                                }
                                 break;
 
                         }
