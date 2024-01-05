@@ -13,8 +13,6 @@ namespace FiendMagicDestiny_bot
 {
     internal class FileDestiny
     {
-
-
         public void WriteToFile(string fileName, string data)
         {
             var FilePath = Path.Combine(Environment.CurrentDirectory, fileName);
@@ -29,22 +27,15 @@ namespace FiendMagicDestiny_bot
             using (FileStream fileStream = new FileStream(FilePath, FileMode.Open))
             {
                 InputFileStream inputFile = new InputFileStream(fileStream, Path.GetFileName(FilePath));
-
                 await botClient.SendDocumentAsync(chatId, inputFile);
             }
         }
-        public void DeliteFile(string fileName)
+        public void DeleteFile(string fileName)
         {
             var FilePath = Path.Combine(Environment.CurrentDirectory, fileName);
             if (System.IO.File.Exists(FilePath))
-            {
                 System.IO.File.Delete(FilePath);
-            }
-
-
+            
         }
-
-
-
     }
 }
