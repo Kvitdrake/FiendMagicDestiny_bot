@@ -17,8 +17,6 @@ global using Telegram.Bot.Types.ReplyMarkups;
 global using Telegram.Bot.Args;
 global using System.Data.Common;
 global using System.Collections;
-global using Telegram.Bots.Http;
-using Telegram.Bots;
 using FiendMagicDestiny_bot;
 
 namespace Fiend.Magic_bot
@@ -80,6 +78,7 @@ namespace Fiend.Magic_bot
                             case State.TarotCard:
                                 try
                                 {
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Пожалуйста, подожди несколько секунд и все будет готово.");
                                     _stateMachine.TransformationString(chatId, message.Text); //
                                     _stateMachine.BuilderList(chatId); //?
                                     await botClient.SendTextMessageAsync(message.Chat.Id, "Всё идет по плану, я уже наклепал файлик. Напиши свое дополнение и всё будет готово.");
@@ -99,31 +98,11 @@ namespace Fiend.Magic_bot
                             case State.Add:
                                 _stateMachine.SaveAddition(chatId, message.Text);
 
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)");
+                                await _stateMachine.SendAddition(botClient, chatId);
+                                _stateMachine.ResetState(chatId);
+                                _stateMachine.SetState(chatId, State.None);
 
-                                var replyKeyboardMarkup2 = new ReplyKeyboardMarkup(new[]
-                                   {
-                                    new KeyboardButton[]
-                                        {
-                                            MessageResponses.Add,
-                                            MessageResponses.Test
-                                        }
-                                    });
-
-
-                                if (message.Text == "Тестовый режим")
-                                {
-                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)", replyMarkup: replyKeyboardMarkup2);
-                                    _stateMachine.SendAddition(botClient, chatId);
-                                    _stateMachine.ResetState(chatId);
-                                    _stateMachine.SetState(chatId, State.Gender);
-                                }
-                                else
-                                {
-                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)", replyMarkup: replyKeyboardMarkup2);
-                                    _stateMachine.SendAddition(botClient, chatId);
-                                    _stateMachine.ResetState(chatId);
-                                    _stateMachine.SetState(chatId, State.None);
-                                }
                                 break;
 
                         }
