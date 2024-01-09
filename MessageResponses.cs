@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FiendMagicDestiny_bot
 {
-    class MessageResponses
+     class MessageResponses
     {
         public static KeyboardButton Add => new KeyboardButton("Новое предназначение");
         public static KeyboardButton Edit => new KeyboardButton("Изменить");

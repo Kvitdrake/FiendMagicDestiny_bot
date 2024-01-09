@@ -17,8 +17,6 @@ global using Telegram.Bot.Types.ReplyMarkups;
 global using Telegram.Bot.Args;
 global using System.Data.Common;
 global using System.Collections;
-global using Telegram.Bots.Http;
-using Telegram.Bots;
 using FiendMagicDestiny_bot;
 
 namespace Fiend.Magic_bot
@@ -80,6 +78,7 @@ namespace Fiend.Magic_bot
                             case State.TarotCard:
                                 try
                                 {
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Пожалуйста, подожди несколько секунд и все будет готово.");
                                     _stateMachine.TransformationString(chatId, message.Text); //
                                     _stateMachine.BuilderList(chatId); //?
                                     await botClient.SendTextMessageAsync(message.Chat.Id, "Всё идет по плану, я уже наклепал файлик. Напиши свое дополнение и всё будет готово.");
@@ -98,23 +97,11 @@ namespace Fiend.Magic_bot
                                 break;
                             case State.Add:
                                 _stateMachine.SaveAddition(chatId, message.Text);
-                                _stateMachine.SendAddition(botClient, chatId);
 
-                                var replyKeyboardMarkup2 = new ReplyKeyboardMarkup(new[]
-                                   {
-                                    new KeyboardButton[]
-                                        {
-                                            MessageResponses.Add,
-                                            MessageResponses.Test
-                                        }
-                                    });
-
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)", replyMarkup: replyKeyboardMarkup2);
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)");
+                                await _stateMachine.SendAddition(botClient, chatId);
                                 _stateMachine.ResetState(chatId);
-                                if (message.Text == "Тестовый режим")
-                                    _stateMachine.SetState(chatId, State.Gender);
-                                else
-                                    _stateMachine.SetState(chatId, State.None);
+                                _stateMachine.SetState(chatId, State.None);
 
                                 break;
 
@@ -136,7 +123,7 @@ namespace Fiend.Magic_bot
             await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения. \r\n Для перезапуска бота");
         }
 
-        private static Task Error(ITelegramBotClient botClient, Exception exception, CancellationToken token)
+            private static Task Error(ITelegramBotClient botClient, Exception exception, CancellationToken token)
         {
             throw new NotImplementedException();
         }
