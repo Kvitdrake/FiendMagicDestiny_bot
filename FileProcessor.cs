@@ -1,71 +1,101 @@
-﻿/*using System;
+﻿using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Telegram.Bot;
-using Microsoft.Office.Interop.Word;
+using DocumentFormat.OpenXml.Wordprocessing;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Telegram.Bot;
+using Telegram.Bot.Args;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
+using Xceed.Words.NET;
+using File = System.IO.File;
 
 namespace FiendMagicDestiny_bot
 {
-    internal class WordFileProcessor
+    internal class FileWork
     {
-        private Application wordApp;
-        private Microsoft.Office.Interop.Word.Document doc;
+        private static Dictionary<long, List<string>> fileData = new Dictionary<long, List<string>>();
+        private static Dictionary<long, List<string>> addData = new Dictionary<long, List<string>>();
 
-        public WordFileProcessor()
+        public static async Task WriteToFile(long chatId, string text)
         {
-            wordApp = new Application();
-            doc = wordApp.Documents.Add();
+            // Проверяем, есть ли уже данные для данного чата
+            if (!fileData.ContainsKey(chatId))
+            {
+                fileData[chatId] = new List<string>();
+            }
+
+            // Добавляем текст в список данных для данного чата
+            fileData[chatId].Add(text);
+        }
+        public static async Task WriteToFileAddition(long chatId, string text)
+        {
+            // Проверяем, есть ли уже данные для данного чата
+            if (!addData.ContainsKey(chatId))
+            {
+                addData[chatId] = new List<string>();
+            }
+
+            // Добавляем текст в список данных для данного чата
+            addData[chatId].Add(text);
         }
 
-        public void AddBoldText(string text, string[] formattedWords)
+        public static async Task SendFormattedText( long chatId, string fileName)
         {
-            Paragraph paragraph = doc.Content.Paragraphs.Add();
-            paragraph.Range.Text = text;
-
-            foreach (string word in formattedWords)
+            string filePath = Path.Combine(Environment.CurrentDirectory, fileName);
+            // Создаем новый документ
+            using (var doc = DocX.Create(filePath))
             {
-                Find find = paragraph.Range.Find;
-                find.Text = word;
-                find.Replacement.Text = word;
-                find.Font.Bold = 1;
-                find.Execute(Replace: WdReplace.wdReplaceAll);
+                // Проходимся по списку данных и добавляем их в документ
+                foreach (var text in fileData[chatId])
+                {
+                    var paragraph = doc.InsertParagraph();
+
+                    // Разделяем текст на отдельные слова
+                    var words = text.Split(' ');
+
+                    // Проходимся по каждому слову и проверяем, нужно ли его выделить
+                    foreach (var word in words)
+                    {
+                        // Если слово или словосочетание нужно выделить, устанавливаем для него форматирование
+                        if (word == "ЛЮДИ-НОСИТЕЛИ" && word == "АРХЕТИПА")
+                        {
+                            paragraph.Append(word).Bold();
+                        }
+                        else
+                        {
+                            paragraph.Append(word);
+                        }
+
+                        paragraph.Append(" ");
+                    }
+                }
             }
         }
-        public async System.Threading.Tasks.Task SendingFile(ITelegramBotClient botClient, long chatId, string fileName, WordFileProcessor processor)
+        public async Task SendingFile(ITelegramBotClient botClient, long chatId, string fileName)
         {
-            processor.SaveAndClose(fileName);
-
             var FilePath = Path.Combine(Environment.CurrentDirectory, fileName);
-            using (FileStream fileStream = new FileStream(FilePath, FileMode.Open))
+            using (var fileStream = File.OpenRead(FilePath))
             {
                 InputFileStream inputFile = new InputFileStream(fileStream, Path.GetFileName(FilePath));
                 await botClient.SendDocumentAsync(chatId, inputFile);
             }
         }
-        public void SaveAndClose(string fileName)
+        public void DeleteFile(string fileName, long chatId)
         {
-            var filePath = Path.Combine(Environment.CurrentDirectory, fileName);
-            doc.SaveAs(filePath, WdSaveFormat.wdFormatDocument);
-            doc.Close();
-            wordApp.Quit();
-        }
-
-        public void WriteToFile(string fileName, string data)
-        {
-            var filePath = Path.Combine(Environment.CurrentDirectory, fileName);
-            using (StreamWriter writer = new StreamWriter(filePath, true, Encoding.UTF8))
+            var FilePath = Path.Combine(Environment.CurrentDirectory, fileName);
+            if (System.IO.File.Exists(FilePath))
             {
-                writer.WriteLine(data);
+                System.IO.File.Delete(FilePath);
+                fileData[chatId].Clear();
             }
         }
-
-        public void DeleteFile(string fileName)
-        {
-            var filePath = Path.Combine(Environment.CurrentDirectory, fileName);
-            if (System.IO.File.Exists(filePath))
-                System.IO.File.Delete(filePath);
-        }
     }
-}*/
+}
