@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FiendMagicDestiny_bot
+﻿namespace FiendMagicDestiny_bot
 {
     public class Desc
     {
@@ -39,8 +33,5 @@ namespace FiendMagicDestiny_bot
         {
             return desc;
         }
-
-
     }
-
 }

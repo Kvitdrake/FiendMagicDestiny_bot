@@ -1,16 +1,5 @@
 ﻿using Fiend.Magic_bot;
-using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Telegram.Bot.Types;
-using DocumentFormat.OpenXml.Wordprocessing;
+
 
 namespace FiendMagicDestiny_bot
 {
@@ -34,7 +23,9 @@ namespace FiendMagicDestiny_bot
             _DateBirth = new Dictionary<long, string>();
             _Gender = new Dictionary<long, string>();
             _Addition = new Dictionary<long, string>();
-    }
+            processor = new WordFileProcessor();
+            processor2 = new WordFileProcessor();
+        }
         public State GetCurrentState(long chatId)
         {
             if (!userStates.ContainsKey(chatId))
@@ -81,6 +72,8 @@ namespace FiendMagicDestiny_bot
                 _Gender.Remove(chatId);
             if (_Addition.ContainsKey(chatId))
                 _Addition.Remove(chatId);
+            processor.DeleteFile(fileName);
+            // processor2.DeleteFile(fileName2);
         }
         //---------------------------------------------------------------------------------------------------------------------------------------------------------
         private Dictionary<short, TaroArcans> Arcans = new Dictionary<short, TaroArcans>();
@@ -226,15 +219,13 @@ namespace FiendMagicDestiny_bot
             processor.SaveAndClose(fileName);
             //processor2.SaveAndClose(fileName2);
             await processor.SendingFile(botClient, chatId, fileName);
-           // await processor2.SendingFile(botClient, chatId, fileName2);
-            processor.DeleteFile(fileName);
-           // processor2.DeleteFile(fileName2);
+           // await processor2.SendingFile(botClient, chatId, fileName2)
         }
         public void BuilderList(long chatId)
         {
 
             fileName = $"{StateMachine._Name[chatId]}_Предназначение.doc";
-            WriteInstructions(fileName, chatId);
+            WriteInstructions( chatId);
             WriteArcs();
             WriteComb();
             HashSet<string> addedCombinations = new HashSet<string>();
@@ -249,7 +240,6 @@ namespace FiendMagicDestiny_bot
                     short rep = repeats[obj];
                     if (Arcans.ContainsKey(obj) && !addedArcans.Contains(obj))
                     {
-
                         TaroArcans arcan = Arcans[obj];
                         string desc = (_Gender[chatId] == "👩Женщина") ? arcan.DescriptionG : arcan.DescriptionM;
                         string data = (rep != 1) ? $"{arcan.Name} ({rep}) \r\n {desc}\r\n\r\n\r\n" : $"{arcan.Name} \r\n {desc}\r\n\r\n\r\n";
@@ -276,7 +266,7 @@ namespace FiendMagicDestiny_bot
                             foreach (short obj3 in Arcs)
                             {
                                 if ((repeats[obj] > 1 || (repeats[obj] == 1 && obj2 != obj)) && repeats.ContainsKey(obj2)
-                                    && ((repeats[obj] > 1 && (obj2 == obj || obj2 == obj3)) || (repeats[obj2] > 1 && (obj2 == obj || obj2 == obj3)) || (repeats[obj] == 1 && obj3 != obj && obj3 != obj2 && obj != obj2)) && repeats.ContainsKey(obj3))
+                                    && ((repeats[obj] > 1 && (obj2 == obj || obj == obj3)) || (repeats[obj2] > 1 && (obj2 == obj || obj2 == obj3)) || (repeats[obj] == 1 && obj3 != obj && obj3 != obj2 && obj != obj2)) && repeats.ContainsKey(obj3))
                                 {
                                     string combinationKey = $"{obj}-{obj2}-{obj3}";
                                     if (arcan.Combinations.ContainsKey(combinationKey) && !addedCombinations.Contains(combinationKey))
@@ -289,7 +279,7 @@ namespace FiendMagicDestiny_bot
                                 foreach (short obj4 in Arcs)
                                 {
                                     if ((repeats[obj] > 1 || (repeats[obj] == 1 && obj2 != obj)) && repeats.ContainsKey(obj2)
-                     && (repeats[obj] > 1 || repeats[obj2] > 1 || (repeats[obj] == 1 && obj3 != obj && obj3 != obj2)) && repeats.ContainsKey(obj3)
+                     && ((repeats[obj] > 1 && (obj2 == obj || obj == obj3)) || (repeats[obj2] > 1 && (obj2 == obj || obj2 == obj3)) || (repeats[obj] == 1 && obj3 != obj && obj3 != obj2 && obj != obj2)) && repeats.ContainsKey(obj3)
 && (repeats[obj] > 1 || repeats[obj2] > 1 || repeats[obj3] > 1 || (repeats[obj] == 1 && obj4 != obj && obj3 != obj2 && obj4 != obj2)) && repeats.ContainsKey(obj4))
                                     {
                                         string combinationKey = $"{obj}-{obj2}-{obj3}-{obj4}";
@@ -308,7 +298,6 @@ namespace FiendMagicDestiny_bot
             }
             WriteKarma();
             WriteGift();
-
         }
         public void WriteArcs()
         {
@@ -545,7 +534,7 @@ namespace FiendMagicDestiny_bot
             }
             return countMap;
         }
-        public void WriteInstructions(string fileName, long chatId)
+        public void WriteInstructions( long chatId)
         {
             string instructions = $"Правила работы с информацией.\r\n\r\n   По дате рождения я рассчитываю 9 арканов человека, соответствующих его дате рождения и влияющих на его личность всю жизнь.\r\n\r\n   Каждый аркан - одна из 9 частей личности, собирающаяся в итоге в уникальность отдельно взятого человека.\r\n\r\n   У каждого аркана есть уровни отработки. Большинство арканов я делю на “плюсовую отработку” и “минусовую”, хотя есть арканы с многоуровневой отработкой.\r\n    Плюсовая - это то, как НАДО отрабатывать аркан, чтобы кармические последствия были только положительными.\r\n\r\n   Минусовая влечёт за собой отрицательные кармические последствия (болезни, повторяющиеся негативные ситуации, токсичные эмоции, сложные отношения с людьми, внезапные потери денег и тп, и тд).\r\n\r\n   “Люди-архетипы аркана” - те, кто является наиболее ярким носителем аркана. Например, у аркана Суд это будет гробовщик или психоаналитик, у Иерофанта - священнослужитель (истинный, не те, что сейчас в церквях), у Императрицы - Мать с большой буквы.\r\n\r\n   ПРОФЕССИЯ.\r\n   {_Name[chatId]}, Вы можете выбрать ЛЮБУЮ профессию ЛЮБОГО аркана, ниже перечисленного*, НО!\r\n   Вы должны понимать и стремиться к тому, чтобы остальные арканы покрывали выбранную деятельность. Чтобы не было выпадания какого-то аркана, иначе он автоматически уйдет в негатив.\r\n\r\n   Также я не сторонник того, чтобы профессию выбрать по четырем-пяти арканам, а хобби - по оставшимся, поскольку начнется раздвоение деятельности, влияющее негативно на сознание: работу я ненавижу, но и хобби тоже (что-то в этом духе).\r\n*если иное не указано в тексте.\r\n";
             WriteData(instructions);

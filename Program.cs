@@ -1,22 +1,8 @@
-﻿global using System;
-global using System.Collections.Generic;
-global using System.Linq;
-global using System.Text;
-global using System.Threading.Tasks;
-global using Microsoft.VisualBasic;
-global using System.IO;
-global using System.Runtime.InteropServices.ComTypes;
-global using System.Security.Claims;
-global using System.Threading;
+﻿global using System.Text;
 global using Telegram.Bot;
-global using Telegram.Bot.Exceptions;
-global using Telegram.Bot.Polling;
 global using Telegram.Bot.Types;
 global using Telegram.Bot.Types.Enums;
 global using Telegram.Bot.Types.ReplyMarkups;
-global using Telegram.Bot.Args;
-global using System.Data.Common;
-global using System.Collections;
 using FiendMagicDestiny_bot;
 
 namespace Fiend.Magic_bot
@@ -36,8 +22,6 @@ namespace Fiend.Magic_bot
             if (message != null && message.Chat != null)
             {
                 var chatId = message.Chat.Id;
-
-                var username = message.Chat.Username;
                 if (update.Type == UpdateType.Message)
                 {
                     if (_stateMachine == null)
@@ -60,9 +44,8 @@ namespace Fiend.Magic_bot
                                     });
                         switch (_stateMachine.GetCurrentState(chatId))
                         {
-
                             case State.None:
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, пол человека, а потом просто через пробел все его арканы. \n\r Жду имя)");
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, пол человека, а потом просто через пробел все его арканы. \n\r Жду имя)", replyMarkup: new ReplyKeyboardRemove());
                                 _stateMachine.SetState(chatId, State.Name);
                                 break;
                             case State.Name:
@@ -93,18 +76,36 @@ namespace Fiend.Magic_bot
                                 {
                                     await botClient.SendTextMessageAsync(message.Chat.Id, "Некорректное число");
                                 }
-
                                 break;
                             case State.Add:
                                 _stateMachine.SaveAddition(chatId, message.Text);
-
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)");
+                                var replyKeyboardMarkup2 = new ReplyKeyboardMarkup(new[]
+                                    {
+                                    new KeyboardButton[]
+                                        {
+                                            MessageResponses.Add
+                                        },
+                                    new KeyboardButton[]
+                                        {
+                                            MessageResponses.AddForYear
+                                        }
+                                    });
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)", replyMarkup: replyKeyboardMarkup2);
                                 await _stateMachine.SendAddition(botClient, chatId);
-                                _stateMachine.ResetState(chatId);
-                                _stateMachine.SetState(chatId, State.None);
-
+                                _stateMachine.SetState(chatId, State.WaitForNextAction);
                                 break;
-
+                            case State.WaitForNextAction:
+                                if (message.Text == "Новое предназначение")
+                                {
+                                    _stateMachine.ResetState(chatId);
+                                    _stateMachine.SetState(chatId, State.None);
+                                }
+                                if (message.Text == "Новый прогноз на год")
+                                {
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "В разработке");
+                                    _stateMachine.SetState(chatId, State.WaitForNextAction);
+                                }
+                                break;
                         }
                     }
                     else
@@ -136,6 +137,6 @@ namespace Fiend.Magic_bot
         Gender,
         TarotCard, // 
         Add,
-        Finish //
+        WaitForNextAction //
     }
 }
