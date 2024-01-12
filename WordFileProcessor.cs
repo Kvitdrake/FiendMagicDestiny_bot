@@ -11,7 +11,7 @@ using Telegram.Bot.Types;
 namespace FiendMagicDestiny_bot
 {
     public class WordFileProcessor
-    { 
+    {
         private Application wordApp;
         private Microsoft.Office.Interop.Word.Document doc;
 
@@ -23,6 +23,7 @@ namespace FiendMagicDestiny_bot
 
         public void AddFormattedText(string text, string[] formattedWords)
         {
+
             Paragraph paragraph = doc.Content.Paragraphs.Add();
             paragraph.Range.Text = text;
 
@@ -35,6 +36,7 @@ namespace FiendMagicDestiny_bot
                 find.Execute(Replace: WdReplace.wdReplaceAll);
                 Console.WriteLine(word + " ЭТО СТАЛО ЖИРНЫМ");
             }
+
         }
 
         public void SaveAndClose(string fileName)
@@ -49,6 +51,12 @@ namespace FiendMagicDestiny_bot
                 CloseDocument();
                 QuitWordApplication();
             }
+        }
+        public void Dispose()
+        {
+            CloseDocument();
+            QuitWordApplication();
+            GC.SuppressFinalize(this);
         }
         private void CloseDocument()
         {
@@ -93,6 +101,8 @@ namespace FiendMagicDestiny_bot
             var filePath = Path.Combine(Environment.CurrentDirectory, fileName);
             if (System.IO.File.Exists(filePath))
                 System.IO.File.Delete(filePath);
+
+            Dispose();
         }
     }
 }

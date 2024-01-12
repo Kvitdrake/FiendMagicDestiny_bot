@@ -14,7 +14,6 @@ namespace FiendMagicDestiny_bot
         private protected static string fileName;
         private protected static string fileName2;
         private WordFileProcessor processor = new WordFileProcessor();
-        private WordFileProcessor processor2 = new WordFileProcessor();
 
         public StateMachine()
         {
@@ -24,7 +23,6 @@ namespace FiendMagicDestiny_bot
             _Gender = new Dictionary<long, string>();
             _Addition = new Dictionary<long, string>();
             processor = new WordFileProcessor();
-            processor2 = new WordFileProcessor();
         }
         public State GetCurrentState(long chatId)
         {
@@ -73,7 +71,6 @@ namespace FiendMagicDestiny_bot
             if (_Addition.ContainsKey(chatId))
                 _Addition.Remove(chatId);
             processor.DeleteFile(fileName);
-            // processor2.DeleteFile(fileName2);
         }
         //---------------------------------------------------------------------------------------------------------------------------------------------------------
         private Dictionary<short, TaroArcans> Arcans = new Dictionary<short, TaroArcans>();
@@ -212,14 +209,26 @@ namespace FiendMagicDestiny_bot
         public async Task SendAddition(ITelegramBotClient botClient, long chatId)
         {
             fileName2 = $"ДОПОЛНЕНИЕ: {StateMachine._Name[chatId]}_Предназначение.doc";
-            //file2.CreateDocument();
             string data = $"\r\n\r\n\r\n\r\n\r\n\r\n    Дополнение: \r\n {_Addition[chatId]}";
-            processor.WriteToFile(fileName, data);
-           // WriteAddition(data);
+            //WordFileProcessor processor2 = new WordFileProcessor();
+
+            WriteData(processor, fileName, data);
+            //WriteData(processor2, fileName2, data);
+
             processor.SaveAndClose(fileName);
             //processor2.SaveAndClose(fileName2);
+
             await processor.SendingFile(botClient, chatId, fileName);
-           // await processor2.SendingFile(botClient, chatId, fileName2)
+            //await processor2.SendingFile(botClient, chatId, fileName2);
+
+            processor.DeleteFile(fileName);
+            //processor2.DeleteFile(fileName2);
+
+
+            /*WriteAddition(data);
+            processor2.SaveAndClose(fileName2);
+            await processor2.SendingFile(botClient, chatId, fileName2);
+            processor2.DeleteFile(fileName2);*/
         }
         public void BuilderList(long chatId)
         {
@@ -243,7 +252,7 @@ namespace FiendMagicDestiny_bot
                         TaroArcans arcan = Arcans[obj];
                         string desc = (_Gender[chatId] == "👩Женщина") ? arcan.DescriptionG : arcan.DescriptionM;
                         string data = (rep != 1) ? $"{arcan.Name} ({rep}) \r\n {desc}\r\n\r\n\r\n" : $"{arcan.Name} \r\n {desc}\r\n\r\n\r\n";
-                        WriteData(data);
+                        WriteData(processor, fileName, data);
                         addedArcans.Add(obj);
 
                         bool isFirstCom = true;
@@ -251,17 +260,14 @@ namespace FiendMagicDestiny_bot
                         {
                             if ((repeats[obj] > 1 || (repeats[obj] == 1 && obj2 != obj)) && repeats.ContainsKey(obj2))
                             {
-                                /*if (isFirstCom)
-                                {*/
                                     string combinationKey = $"{obj}-{obj2}";
                                     if (arcan.Combinations.ContainsKey(combinationKey) && !addedCombinations.Contains(combinationKey))
                                     {
                                         string dataAdd = $"   {arcan.Combinations[combinationKey]}";
-                                        WriteData(dataAdd);
+                                        WriteData(processor, fileName, dataAdd);
                                         addedCombinations.Add(combinationKey);
                                         isFirstCom = false;
                                     }
-                                //} провееерь
                             }
                             foreach (short obj3 in Arcs)
                             {
@@ -272,7 +278,7 @@ namespace FiendMagicDestiny_bot
                                     if (arcan.Combinations.ContainsKey(combinationKey) && !addedCombinations.Contains(combinationKey))
                                     {
                                         string dataAdd = $"   {arcan.Combinations[combinationKey]}";
-                                        WriteData(dataAdd);
+                                        WriteData(processor, fileName, dataAdd);
                                         addedCombinations.Add(combinationKey);
                                     }
                                 }
@@ -280,13 +286,13 @@ namespace FiendMagicDestiny_bot
                                 {
                                     if ((repeats[obj] > 1 || (repeats[obj] == 1 && obj2 != obj)) && repeats.ContainsKey(obj2)
                      && ((repeats[obj] > 1 && (obj2 == obj || obj == obj3)) || (repeats[obj2] > 1 && (obj2 == obj || obj2 == obj3)) || (repeats[obj] == 1 && obj3 != obj && obj3 != obj2 && obj != obj2)) && repeats.ContainsKey(obj3)
-&& (repeats[obj] > 1 || repeats[obj2] > 1 || repeats[obj3] > 1 || (repeats[obj] == 1 && obj4 != obj && obj3 != obj2 && obj4 != obj2)) && repeats.ContainsKey(obj4))
+&& (((repeats[obj] > 1 && repeats[obj] < 4) && (obj2 == obj || obj == obj3 || obj == obj4)) || ((repeats[obj2] > 1 && repeats[obj2] < 4) && (obj2 == obj || obj2 == obj3 || obj2 == obj4)) || ((repeats[obj3] > 1 && repeats[obj3] < 4) && (obj3 == obj || obj2 == obj3 || obj3 == obj4)) || (repeats[obj] == 1 && obj4 != obj && obj3 != obj2 && obj4 != obj2) || repeats[obj] == 4) && repeats.ContainsKey(obj4))
                                     {
                                         string combinationKey = $"{obj}-{obj2}-{obj3}-{obj4}";
                                         if (arcan.Combinations.ContainsKey(combinationKey) && !addedCombinations.Contains(combinationKey))
                                         {
                                             string dataAdd = $"   {arcan.Combinations[combinationKey]}";
-                                            WriteData(dataAdd);
+                                            WriteData(processor, fileName, dataAdd);
                                             addedCombinations.Add(combinationKey);
                                         }
                                     }
@@ -400,10 +406,12 @@ namespace FiendMagicDestiny_bot
             AddCombination(5, 8, $"Правосудие и Иерофант дают желание учиться, развиваться, точность и наблюдательность, критичность.  {indent}");
             AddCombination(5, 5, 12, $"2 Иерофанта и Повешенный- тонкий настрой на религию и познание себя. Занятие благотворительностью. Связка есть у Ричарда Гира, который увлекается буддизмом и медитациями.{indent}");
             AddCombination(5, 1, 13, $"По 5 аркану идут аниматоры (Хаяо Миядзаки, Дисней, Эдуард Назаров, Норштейн, Хитрук). Особенно сочетается с Магом и Смертью{indent}");
-            
+            AddCombination(5, 15, 13, $"Дьявол и Иерофант –  аспект «хитрый лис», аспект серого кардинала, дает сильный ум, упорство, настойчивость, прекрасное образование и умение применять знания в политике. По 5 аркану идут аниматоры (Хаяо Миядзаки, Дисней, Эдуард Назаров, Норштейн, Хитрук). Особенно сочетается со Смертью{indent}");
+
+
             AddCombination(5, 8, 9, $"Отшельник – Иерофант- Правосудие - аспект ума, умение анализировать и наблюдать. Любовь к одиночеству и закрытости. Часто играет интеллектуалок.{indent}");
             AddCombination(5, 18, 9, $"Отшельник + Луна + Иерофант - мощные ум и интуиция, умение многому учится, преподавание, твердые принципы. Интерес к мистике и эзотерике.{indent}");
-            AddCombination(5, 1, 13, 15, $"По 5 аркану идут аниматоры (Хаяо Миядзаки, Дисней, Эдуард Назаров, Норштейн, Хитрук). Особенно сочетается с Магом, Смертью и Дьяволом{indent}");
+            AddCombination(5, 1, 13, 15, $"Дьявол и Иерофант –  аспект «хитрый лис», аспект серого кардинала, дает сильный ум, упорство, настойчивость, прекрасное образование и умение применять знания в политике. По 5 аркану идут аниматоры (Хаяо Миядзаки, Дисней, Эдуард Назаров, Норштейн, Хитрук). Особенно сочетается с Магом, Смертью и Дьяволом{indent}");
 
             AddCombination(6, 20, $"Влюбленные и Суд - очень важна семья, возможны кармические проблемы в браке. Романтика, несколько браков. {indent}");
             AddCombination(6, 10, $"Колесо Фортуны и Влюбленные- романы с партнёрами других культур, легкое отношение к браку. Любовь к партнёрам-интеллектуалам.    {indent}");
@@ -507,7 +515,7 @@ namespace FiendMagicDestiny_bot
             if (Karma.ContainsKey(Arcs[3]))
             {
                 string data = $"Карма Презназначения \r\n\r\n {Karma[Arcs[3]]} \r\n ";
-                WriteData( data);
+                WriteData(processor, fileName, data);
             }
         }
         public void WriteGift()
@@ -515,7 +523,7 @@ namespace FiendMagicDestiny_bot
             if (Gifts.ContainsKey(Arcs[4]))
             {
                 string data = $"Дар Презназначения \r\n\r\n {Gifts[Arcs[4]]} ";
-                WriteData(data);
+                WriteData(processor, fileName, data);
             }
         }
         public static Dictionary<short, short> CountingReps(short[] nums)
@@ -537,15 +545,17 @@ namespace FiendMagicDestiny_bot
         public void WriteInstructions( long chatId)
         {
             string instructions = $"Правила работы с информацией.\r\n\r\n   По дате рождения я рассчитываю 9 арканов человека, соответствующих его дате рождения и влияющих на его личность всю жизнь.\r\n\r\n   Каждый аркан - одна из 9 частей личности, собирающаяся в итоге в уникальность отдельно взятого человека.\r\n\r\n   У каждого аркана есть уровни отработки. Большинство арканов я делю на “плюсовую отработку” и “минусовую”, хотя есть арканы с многоуровневой отработкой.\r\n    Плюсовая - это то, как НАДО отрабатывать аркан, чтобы кармические последствия были только положительными.\r\n\r\n   Минусовая влечёт за собой отрицательные кармические последствия (болезни, повторяющиеся негативные ситуации, токсичные эмоции, сложные отношения с людьми, внезапные потери денег и тп, и тд).\r\n\r\n   “Люди-архетипы аркана” - те, кто является наиболее ярким носителем аркана. Например, у аркана Суд это будет гробовщик или психоаналитик, у Иерофанта - священнослужитель (истинный, не те, что сейчас в церквях), у Императрицы - Мать с большой буквы.\r\n\r\n   ПРОФЕССИЯ.\r\n   {_Name[chatId]}, Вы можете выбрать ЛЮБУЮ профессию ЛЮБОГО аркана, ниже перечисленного*, НО!\r\n   Вы должны понимать и стремиться к тому, чтобы остальные арканы покрывали выбранную деятельность. Чтобы не было выпадания какого-то аркана, иначе он автоматически уйдет в негатив.\r\n\r\n   Также я не сторонник того, чтобы профессию выбрать по четырем-пяти арканам, а хобби - по оставшимся, поскольку начнется раздвоение деятельности, влияющее негативно на сознание: работу я ненавижу, но и хобби тоже (что-то в этом духе).\r\n*если иное не указано в тексте.\r\n";
-            WriteData(instructions);
+            WriteData( processor,fileName, instructions);
             
         }
-        public void WriteAddition(string data)
+        /*public void WriteAddition(string data)
         {
             Console.WriteLine(data);
-            processor2.WriteToFile(fileName2,data);
-        }
-        public void WriteData(string data)
+            processor2.WriteToFile(fileName2, data);
+            processor2.AddFormattedText(data, boldWords);
+
+        }*/
+        public void WriteData( WordFileProcessor processor,string fileName, string data)// в будущем сделай интерфейсом
         {
             Console.WriteLine(data);
             processor.WriteToFile(fileName, data);
