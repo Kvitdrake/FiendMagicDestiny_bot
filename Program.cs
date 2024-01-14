@@ -44,9 +44,27 @@ namespace Fiend.Magic_bot
                                     });
                         switch (_stateMachine.GetCurrentState(chatId))
                         {
+                            /*case State.None:
+                                if (message.Text == "Новое предназначение")
+                                {
+                                    _stateMachine.SetState(chatId, State.Start);
+                                }
+                                if (message.Text == "Новый прогноз на год")
+                                {
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "В разработке");
+                                    _stateMachine.SetState(chatId, State.None);
+                                }break;*/
                             case State.None:
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, пол человека, а потом просто через пробел все его арканы. \r\n\r\n Жду имя)", replyMarkup: new ReplyKeyboardRemove());
-                                _stateMachine.SetState(chatId, State.Name);
+                                if (message.Text == "Новое предназначение")
+                                {
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, пол человека, а потом просто через пробел все его арканы. \r\n\r\n Жду имя)", replyMarkup: new ReplyKeyboardRemove());
+                                    _stateMachine.SetState(chatId, State.Name);
+                                }
+                                if (message.Text == "Новый прогноз на год")
+                                {
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "В разработке");
+                                    _stateMachine.SetState(chatId, State.None);
+                                }
                                 break;
                             case State.Name:
                                 _stateMachine.SaveName(chatId, message.Text);
@@ -91,17 +109,10 @@ namespace Fiend.Magic_bot
                                         }
                                     });
                                 await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)", replyMarkup: replyKeyboardMarkup2);
-                                await _stateMachine.SendAddition(botClient, chatId);
-                                if (message.Text == "Новое предназначение")
-                                {
-                                    _stateMachine.ResetState(chatId);
-                                    _stateMachine.SetState(chatId, State.None);
-                                }
-                                if (message.Text == "Новый прогноз на год")
-                                {
-                                    await botClient.SendTextMessageAsync(message.Chat.Id, "В разработке");
-                                    _stateMachine.SetState(chatId, State.Add);
-                                }
+                                _stateMachine.SendAddition(botClient, chatId);
+                                _stateMachine.ResetState(chatId);
+                                _stateMachine.SetState(chatId, State.None);
+                                
                                 break;
                         }
                     }
@@ -118,7 +129,18 @@ namespace Fiend.Magic_bot
         {
             var message = update.Message;
             var chatId = message.Chat.Id;
-            await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения. \r\n Для перезапуска бота");
+            var replyKeyboardMarkup2 = new ReplyKeyboardMarkup(new[]
+                                    {
+                                    new KeyboardButton[]
+                                        {
+                                            MessageResponses.Add
+                                        },
+                                    new KeyboardButton[]
+                                        {
+                                            MessageResponses.AddForYear
+                                        }
+                                    });
+            await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения. \r\n По вопросам - @soltias ", replyMarkup: replyKeyboardMarkup2);
         }
         private static void RandomName()
         {
@@ -126,7 +148,7 @@ namespace Fiend.Magic_bot
             {
                 {1, "Маша" },
                 {2, "Королева белок" },
-                {3, "Маша" },
+                {3, "Марганец" },
                 {4, "Маша" },
                 {5, "Маша" },
             };
@@ -139,7 +161,8 @@ namespace Fiend.Magic_bot
     }
     enum State
     {
-        None, // новая запись, введи имя
+        None, 
+        Start,// новая запись, введи имя
         Name, // введи дату рождения
         Date_birth, // введи контакт
         Gender,

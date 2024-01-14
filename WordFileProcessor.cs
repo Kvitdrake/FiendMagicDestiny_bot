@@ -15,19 +15,23 @@ namespace FiendMagicDestiny_bot
         private Application wordApp;
         private Microsoft.Office.Interop.Word.Document doc;
         public bool delParagraph = false;
-
         public WordFileProcessor()
         {
             wordApp = new Application();
             doc = wordApp.Documents.Add();
         }
-
+        public void WriteToFile(string fileName, string data)
+        {
+            var filePath = Path.Combine(Environment.CurrentDirectory, fileName);
+            using (StreamWriter writer = new StreamWriter(filePath, true, Encoding.UTF8))
+            {
+                writer.WriteLine(data);
+            }
+        }
         public void AddFormattedText(string text, string[] formattedWords)
         {
-
             Paragraph paragraph = doc.Content.Paragraphs.Add(); //вот тут на второй раз возникает ошибка  "Object reference not set to an instance of an object"
             paragraph.Range.Text = text;
-
             foreach (string word in formattedWords)
             {
                 Find find = paragraph.Range.Find;
@@ -37,15 +41,14 @@ namespace FiendMagicDestiny_bot
                 find.Execute(Replace: WdReplace.wdReplaceAll);
                 Console.WriteLine(word + " ЭТО СТАЛО ЖИРНЫМ");
             }
-            if(delParagraph == true) //эт флажок, который ставится при последнем использовании этого метода в цикле стейт-машины
+            if (delParagraph == true)
             {
                 DelParagraph(paragraph);
             }
-
         }
-        private void DelParagraph(Paragraph paragraph) //по аналогии с doc и wordApp
+        private void DelParagraph(Paragraph paragraph)
         {
-            if(paragraph != null)
+            if (paragraph != null)
             {
                 paragraph.CloseUp();
                 Marshal.ReleaseComObject(paragraph);
@@ -63,13 +66,8 @@ namespace FiendMagicDestiny_bot
             {
                 CloseDocument();
                 QuitWordApplication();
+                GC.SuppressFinalize(this);
             }
-        }
-        public void Dispose()
-        {
-            CloseDocument();
-            QuitWordApplication();
-            GC.SuppressFinalize(this);
         }
         private void CloseDocument()
         {
@@ -90,14 +88,7 @@ namespace FiendMagicDestiny_bot
             }
         }
 
-        public void WriteToFile(string fileName, string data)
-        {
-            var filePath = Path.Combine(Environment.CurrentDirectory, fileName);
-            using (StreamWriter writer = new StreamWriter(filePath, true, Encoding.UTF8))
-            {
-                writer.WriteLine(data);
-            }
-        }
+
 
         public async System.Threading.Tasks.Task SendingFile(ITelegramBotClient botClient, long chatId, string fileName)
         {
@@ -115,7 +106,6 @@ namespace FiendMagicDestiny_bot
             if (System.IO.File.Exists(filePath))
                 System.IO.File.Delete(filePath);
 
-            Dispose();
         }
     }
 }
