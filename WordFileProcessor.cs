@@ -14,6 +14,7 @@ namespace FiendMagicDestiny_bot
     {
         private Application wordApp;
         private Microsoft.Office.Interop.Word.Document doc;
+        public bool delParagraph = false;
 
         public WordFileProcessor()
         {
@@ -24,7 +25,7 @@ namespace FiendMagicDestiny_bot
         public void AddFormattedText(string text, string[] formattedWords)
         {
 
-            Paragraph paragraph = doc.Content.Paragraphs.Add();
+            Paragraph paragraph = doc.Content.Paragraphs.Add(); //вот тут на второй раз возникает ошибка  "Object reference not set to an instance of an object"
             paragraph.Range.Text = text;
 
             foreach (string word in formattedWords)
@@ -36,9 +37,21 @@ namespace FiendMagicDestiny_bot
                 find.Execute(Replace: WdReplace.wdReplaceAll);
                 Console.WriteLine(word + " ЭТО СТАЛО ЖИРНЫМ");
             }
+            if(delParagraph == true)
+            {
+                DelParagraph(paragraph);
+            }
 
         }
-
+        private void DelParagraph(Paragraph paragraph)
+        {
+            if(paragraph != null)
+            {
+                paragraph.CloseUp();
+                Marshal.ReleaseComObject(paragraph);
+                paragraph = null;
+            }
+        }
         public void SaveAndClose(string fileName)
         {
             try
