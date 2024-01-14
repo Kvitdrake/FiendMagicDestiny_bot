@@ -37,13 +37,13 @@ namespace FiendMagicDestiny_bot
                 find.Execute(Replace: WdReplace.wdReplaceAll);
                 Console.WriteLine(word + " ЭТО СТАЛО ЖИРНЫМ");
             }
-            if(delParagraph == true)
+            if(delParagraph == true) //эт флажок, который ставится при последнем использовании этого метода в цикле стейт-машины
             {
                 DelParagraph(paragraph);
             }
 
         }
-        private void DelParagraph(Paragraph paragraph)
+        private void DelParagraph(Paragraph paragraph) //по аналогии с doc и wordApp
         {
             if(paragraph != null)
             {
