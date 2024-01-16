@@ -58,6 +58,7 @@ namespace Fiend.Magic_bot
                                 if (message.Text == "Новое предназначение")
                                 {
                                     await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, пол человека, а потом просто через пробел все его арканы. \r\n\r\n Жду имя)", replyMarkup: new ReplyKeyboardRemove());
+                                    _stateMachine.SaveProcessor(chatId, new WordFileProcessor() );
                                     _stateMachine.SetState(chatId, State.Name);
                                 }
                                 if (message.Text == "Новый прогноз на год")
@@ -83,7 +84,7 @@ namespace Fiend.Magic_bot
                                     _stateMachine.TransformationString(chatId, message.Text); //
                                     _stateMachine.BuilderList(chatId); //?
                                     await botClient.SendTextMessageAsync(message.Chat.Id, "Всё идет по плану, я уже наклепал файлик. Напиши свое дополнение и всё будет готово.");
-
+                                    _stateMachine.SaveProcessor2(chatId, new WordFileProcessor());
                                     _stateMachine.SetState(chatId, State.Add);
                                 }
                                 catch (FormatException)
@@ -140,7 +141,7 @@ namespace Fiend.Magic_bot
                                             MessageResponses.AddForYear
                                         }
                                     });
-            await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения. \r\n По вопросам - @soltias ", replyMarkup: replyKeyboardMarkup2);
+            await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения ❤️ ✨ \r\n По вопросам - @soltias ", replyMarkup: replyKeyboardMarkup2);
         }
         private static void RandomName()
         {

@@ -22,11 +22,12 @@ namespace FiendMagicDestiny_bot
         }
         public void WriteToFile(string fileName, string data)
         {
-            var filePath = Path.Combine(Environment.CurrentDirectory, fileName);
-            using (StreamWriter writer = new StreamWriter(filePath, true, Encoding.UTF8))
-            {
-                writer.WriteLine(data);
-            }
+            
+                var filePath = Path.Combine(Environment.CurrentDirectory, fileName);
+                using (StreamWriter writer = new StreamWriter(filePath, true, Encoding.UTF8))
+                {
+                    writer.WriteLine(data);
+                }
         }
         public void AddFormattedText(string text, string[] formattedWords)
         {
@@ -39,7 +40,6 @@ namespace FiendMagicDestiny_bot
                 find.Replacement.Text = word;
                 find.Font.Bold = 1;
                 find.Execute(Replace: WdReplace.wdReplaceAll);
-                Console.WriteLine(word + " ЭТО СТАЛО ЖИРНЫМ");
             }
             if (delParagraph == true)
             {
@@ -51,6 +51,7 @@ namespace FiendMagicDestiny_bot
             if (paragraph != null)
             {
                 paragraph.CloseUp();
+                Marshal.ReleaseComObject(paragraph.Range);
                 Marshal.ReleaseComObject(paragraph);
                 paragraph = null;
             }
@@ -87,9 +88,6 @@ namespace FiendMagicDestiny_bot
                 wordApp = null;
             }
         }
-
-
-
         public async System.Threading.Tasks.Task SendingFile(ITelegramBotClient botClient, long chatId, string fileName)
         {
             var filePath = Path.Combine(Environment.CurrentDirectory, fileName);
