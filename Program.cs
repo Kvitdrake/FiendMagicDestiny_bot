@@ -1,22 +1,8 @@
-﻿global using System;
-global using System.Collections.Generic;
-global using System.Linq;
-global using System.Text;
-global using System.Threading.Tasks;
-global using Microsoft.VisualBasic;
-global using System.IO;
-global using System.Runtime.InteropServices.ComTypes;
-global using System.Security.Claims;
-global using System.Threading;
+﻿global using System.Text;
 global using Telegram.Bot;
-global using Telegram.Bot.Exceptions;
-global using Telegram.Bot.Polling;
 global using Telegram.Bot.Types;
 global using Telegram.Bot.Types.Enums;
 global using Telegram.Bot.Types.ReplyMarkups;
-global using Telegram.Bot.Args;
-global using System.Data.Common;
-global using System.Collections;
 using FiendMagicDestiny_bot;
 
 namespace Fiend.Magic_bot
@@ -36,8 +22,6 @@ namespace Fiend.Magic_bot
             if (message != null && message.Chat != null)
             {
                 var chatId = message.Chat.Id;
-
-                var username = message.Chat.Username;
                 if (update.Type == UpdateType.Message)
                 {
                     if (_stateMachine == null)
@@ -60,29 +44,38 @@ namespace Fiend.Magic_bot
                                     });
                         switch (_stateMachine.GetCurrentState(chatId))
                         {
-
                             case State.None:
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, дату рождения, тг для связи, а потом просто через пробел все арканы человека. \n\r Жду имя)");
-                                _stateMachine.SetState(chatId, State.Name);
+                                if (message.Text == "Новое предназначение")
+                                {
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, пол человека, а потом просто через пробел все его арканы. \r\n\r\n Жду имя)", replyMarkup: new ReplyKeyboardRemove());
+                                    _stateMachine.SaveProcessor(chatId, new WordFileProcessor());
+                                    _stateMachine.SetState(chatId, State.Name);
+                                }
+                                if (message.Text == "Новый прогноз на год")
+                                {
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "В разработке");
+                                    _stateMachine.SetState(chatId, State.None);
+                                }
                                 break;
                             case State.Name:
                                 _stateMachine.SaveName(chatId, message.Text);
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Замечательно, теперь введи пол человека", replyMarkup: replyKeyboardMarkup1);
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Замечательно, теперь ввыбери пол человека", replyMarkup: replyKeyboardMarkup1);
                                 _stateMachine.SetState(chatId, State.Gender);
                                 break;
                             case State.Gender:
                                 _stateMachine.SaveGender(chatId, message.Text);
                                 await botClient.SendTextMessageAsync(message.Chat.Id, "Отлично. Данные человека у меня есть, присылай арканы (через пробел), пожалуйста)", replyMarkup: new ReplyKeyboardRemove());
+                                _stateMachine.SaveArcManager(chatId, new ArcansManager());
                                 _stateMachine.SetState(chatId, State.TarotCard);
                                 break;
                             case State.TarotCard:
                                 try
                                 {
-                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Пожалуйста, подожди несколько секунд и все будет готово.");
-                                    _stateMachine.TransformationString(chatId, message.Text); //
-                                    _stateMachine.BuilderList(chatId); //?
+                                    await botClient.SendTextMessageAsync(message.Chat.Id, "Пожалуйста, подожди несколько секунд и все будет готово.\r\n⚡️🐎⚡️");
+                                    _stateMachine.TransformationString(chatId, message.Text); 
+                                    _stateMachine.BuilderList(chatId); 
                                     await botClient.SendTextMessageAsync(message.Chat.Id, "Всё идет по плану, я уже наклепал файлик. Напиши свое дополнение и всё будет готово.");
-
+                                    //_stateMachine.SaveProcessor2(chatId, new WordFileProcessor());
                                     _stateMachine.SetState(chatId, State.Add);
                                 }
                                 catch (FormatException)
@@ -93,18 +86,26 @@ namespace Fiend.Magic_bot
                                 {
                                     await botClient.SendTextMessageAsync(message.Chat.Id, "Некорректное число");
                                 }
-
                                 break;
                             case State.Add:
                                 _stateMachine.SaveAddition(chatId, message.Text);
-
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)");
+                                var replyKeyboardMarkup2 = new ReplyKeyboardMarkup(new[]
+                                    {
+                                    new KeyboardButton[]
+                                        {
+                                            MessageResponses.Add
+                                        },
+                                    new KeyboardButton[]
+                                        {
+                                            MessageResponses.AddForYear
+                                        }
+                                    });
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Всё готово, лови файл)", replyMarkup: replyKeyboardMarkup2);
                                 await _stateMachine.SendAddition(botClient, chatId);
                                 _stateMachine.ResetState(chatId);
                                 _stateMachine.SetState(chatId, State.None);
 
                                 break;
-
                         }
                     }
                     else
@@ -120,22 +121,43 @@ namespace Fiend.Magic_bot
         {
             var message = update.Message;
             var chatId = message.Chat.Id;
-            await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения. \r\n Для перезапуска бота");
+            var replyKeyboardMarkup2 = new ReplyKeyboardMarkup(new[]
+                                    {
+                                    new KeyboardButton[]
+                                        {
+                                            MessageResponses.Add
+                                        },
+                                    new KeyboardButton[]
+                                        {
+                                            MessageResponses.AddForYear
+                                        }
+                                    });
+            await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения ❤️ ✨ \r\n По вопросам - @soltias ", replyMarkup: replyKeyboardMarkup2);
         }
-
-            private static Task Error(ITelegramBotClient botClient, Exception exception, CancellationToken token)
+        private static void RandomName()
+        {
+            Dictionary<short, string> name = new Dictionary<short, string>()
+            {
+                {1, "Маша" },
+                {2, "Королева белок" },
+                {3, "Марганец" },
+                {4, "Маша" },
+                {5, "Маша" },
+            };
+        }
+        private static Task Error(ITelegramBotClient botClient, Exception exception, CancellationToken token)
         {
             throw new NotImplementedException();
         }
     }
     enum State
     {
-        None, // новая запись, введи имя
-        Name, // введи дату рождения
-        Date_birth, // введи контакт
+        None,
+        Start,
+        Name,
+        Date_birth,
         Gender,
-        TarotCard, // 
-        Add,
-        Finish //
+        TarotCard,
+        Add
     }
 }

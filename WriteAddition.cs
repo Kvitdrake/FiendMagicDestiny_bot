@@ -1,109 +1,13 @@
-﻿using Fiend.Magic_bot;
-using Org.BouncyCastle.Asn1.BC;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
-using Telegram.Bot.Types;
-using MathNet.Numerics.Optimization.TrustRegion;
-
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FiendMagicDestiny_bot
 {
-    internal class StateMachine
+    internal class WriterAddition
     {
-        private protected static Dictionary<long, State> userStates;
-        private protected static Dictionary<long, string> _Name;
-        private protected static Dictionary<long, string> _DateBirth;
-        private protected static Dictionary<long, string> _Gender;
-        private protected static Dictionary<long, string> _Addition;
-        public static short[] Arcs;
-        private protected static string fileName;
-        private protected static string fileName2;
-        private static Dictionary<long, WordFileProcessor> processor;
-        private static Dictionary<long, WordFileProcessor> processor2;
-        private static Dictionary<long, ArcansManager> arcansManager;
-
-
-
-        public StateMachine()
-        {
-            userStates = new Dictionary<long, State>();
-            _Name = new Dictionary<long, string>();
-            _DateBirth = new Dictionary<long, string>();
-            _Gender = new Dictionary<long, string>();
-            _Addition = new Dictionary<long, string>();
-            processor = new Dictionary<long, WordFileProcessor>();
-            processor2 = new Dictionary<long, WordFileProcessor>();
-            arcansManager = new Dictionary<long, ArcansManager>();
-        }
-        public State GetCurrentState(long chatId)
-        {
-            if (!userStates.ContainsKey(chatId))
-                return State.None;
-
-            return userStates[chatId];
-        }
-        public void SetState(long charId, State state)
-        {
-            userStates[charId] = state;
-        }
-        public void SaveProcessor(long chatId, WordFileProcessor name)
-        {
-            if (processor.ContainsKey(chatId))
-                processor[chatId] = name;
-            else
-                processor.Add(chatId, name);
-        }
-        public void SaveArcManager(long chatId, ArcansManager name)
-        {
-            if (arcansManager.ContainsKey(chatId))
-                arcansManager[chatId] = name;
-            else
-                arcansManager.Add(chatId, name);
-        }
-        public void SaveName(long chatId, string name)
-        {
-            if (_Name.ContainsKey(chatId))
-                _Name[chatId] = name;
-            else
-                _Name.Add(chatId, name);
-        }
-        public void SaveGender(long chatId, string gender)
-        {
-            if (_Gender.ContainsKey(chatId))
-            {
-                _Gender[chatId] = gender;
-            }
-            else
-                _Gender.Add(chatId, gender);
-        }
-        public void SaveAddition(long chatId, string addition)
-        {
-            if (_Addition.ContainsKey(chatId))
-            {
-                _Addition[chatId] = addition;
-            }
-            else
-                _Addition.Add(chatId, addition);
-        }
-        public void ResetState(long chatId)
-        {
-            if (userStates.ContainsKey(chatId))
-                userStates.Remove(chatId);
-            if (_Name.ContainsKey(chatId))
-                _Name.Remove(chatId);
-            if (_Gender.ContainsKey(chatId))
-                _Gender.Remove(chatId);
-            if (_Addition.ContainsKey(chatId))
-                _Addition.Remove(chatId);
-            if(processor.ContainsKey(chatId))
-                processor.Remove(chatId);
-            if (processor2.ContainsKey(chatId))
-                processor2.Remove(chatId);
-        }
-        //---------------------------------------------------------------------------------------------------------------------------------------------------------
-        private HashSet<short> addedArcans = new HashSet<short>();
-        private HashSet<string> addedCombinations = new HashSet<string>();
-
         private Dictionary<short, string> Gifts = new Dictionary<short, string>()
         {
             [1] = "Маг - человек получил от судьбы дар виртуозного владения словом, талант примирять враждующие стороны, быть посредником в спорах, улаживать конфликты, а также способность соединять и в себе, и в своём окружении энергии четырёх стихий. Человек с картой «Маг» в 8. позиции умеет грамотно складывать слова, как в своей устной речи, так и в письме, а его высказывания будут логичными, ясными и красивыми. К дарам, доставшимся такому человеку, можно также отнести лёгкость получения любой информации, ловкость в завязывании новых контактов с ровесниками и плодотворное сотрудничество, как с ними, так и со своими братьями и сестрами.\r\n\r\n",
@@ -179,166 +83,92 @@ namespace FiendMagicDestiny_bot
             [21] = "человек должен выработать в себе такие черты характера как толерантность, мягкость, открытость для всего нового и необычного. На другом уровне в случае этой карты речь идёт об избавлении от комплексов и торможений, открытости энергиям, которые приходят из внешнего мира, а также радости от осознания, что мир так богат и разнообразен. Задание такого человека заключается в контактах с иностранцами, внедрении технических (и не только) инноваций, стремлении к объединению людей разных культурных кругов, традиций и говорящих на разных языках. Такой человек должен стать «гражданином мира» и подняться над разного рода расовыми, националистическими, родовыми и другими разделениями. К сожалению, именно здесь мы чаще всего сталкиваемся с такими ошибками, как невежество, ксенофобия, возношение своей расы, нации, социальной группы над другими, а также отсталость, цепляние за стереотипы и отсутствие толерантности. Многие люди с правильно проработанным Миром становятся полиглотами, путешественниками, экспертами по далёким культурам или просто современными, толерантными и доброжелательными людьми.",
             [22] = "Предназначение"
         };
-
-        private static string[] boldWords = new string[]
+        private Dictionary<long, ArcansManager> arcansManager;
+        private string fileName;
+        public WriterAddition(string fileName, Dictionary<long, ArcansManager> arcanManadger)
         {
-            "ЛЮДИ-НОСИТЕЛИ", "Тип человека:", "талантливый художник.", "АРХЕТИПА:"
-        };
-        public string indent = "\r\n\r\n";
-        public void TransformationString(long chatId, string tarostring)
-        {
-            string allArcs = tarostring;
-            string[] strArc = allArcs.Split(new char[] { }, StringSplitOptions.RemoveEmptyEntries);
-            try
-            {
-                Arcs = Array.ConvertAll(strArc, short.Parse);
-            }
-            catch (FormatException ex)
-            {
-                Console.WriteLine("ошибка при преобразовани строки" + ex);
-                throw;
-            }
-
-            foreach (var num in Arcs)
-            {
-
-                if (num > 23 || num <= 0)
-                {
-                    Console.WriteLine($"Ошибка, число {num} < 0 или > 22");
-                    throw new Exception("Некорректное число");
-
-                }
-                Console.WriteLine($"{num}");
-            }
+            arcanManadger = this.arcansManager;
+            fileName = this.fileName;
         }
-        public async Task SendAddition(ITelegramBotClient botClient, long chatId)
+        public void WriteMyDestiny(long chatId)
         {
-            fileName2 = $"ДОПОЛНЕНИЕ: {StateMachine._Name[chatId]}_Предназначение.doc";
-            string data = $"\r\n\r\n\r\n    Дополнение: \r\n {_Addition[chatId]}";
-            //WordFileProcessor processor2 = new WordFileProcessor();
-            processor[chatId].delParagraph = true;
-           // processor2[chatId].delParagraph = true;
+            Dictionary<short, short> repeats = StateMachine.CountingReps(StateMachine.Arcs);
+            HashSet<short> addedArcans = new HashSet<short>();
+            short count = 1;
+            short[] Arc = new short[] { StateMachine.Arcs[0], StateMachine.Arcs[1], StateMachine.Arcs[2] };
 
-            WriteData(chatId, fileName, data);
-           // WriteData( fileName2, data, processor2[chatId]);
+            string mainData = $"Моё Предназначение: \r\n";
+            StateMachine.WriteData(chatId, fileName, mainData);
 
-            processor[chatId].SaveAndClose(fileName);
-//            processor2[chatId].SaveAndClose(fileName2);
-
-            await processor[chatId].SendingFile(botClient, chatId, fileName);
-  //          await processor2[chatId].SendingFile(botClient, chatId, fileName2);
-
-            processor[chatId].DeleteFile(fileName);
-    //        processor2[chatId].DeleteFile(fileName2);
-
-        }
-        public void BuilderList(long chatId)
-        {
-            fileName = $"{StateMachine._Name[chatId]}_Предназначение.doc";
-            WriteInstructions(chatId);
-
-            Dictionary<short, short> repeats = CountingReps(Arcs);
-
-            foreach (short obj in Arcs)
+            foreach (var num in Arc)
             {
-                if (repeats.ContainsKey(obj))
+                if (repeats.ContainsKey(num))
                 {
-                    short rep = repeats[obj];
-                    if (!addedArcans.Contains(obj))
+                    short rep = repeats[num];
+                    if (!addedArcans.Contains(num))
                     {
-                        TaroArcans arcan = arcansManager[chatId].GetArcan(obj);
-                        string desc = (_Gender[chatId] == "👩Женщина") ? arcan.DescriptionG : arcan.DescriptionM;
-                        string data = (rep != 1) ? $"{arcan.Name} ({rep}) \r\n {desc}\r\n\r\n\r\n" : $"{arcan.Name} \r\n {desc}\r\n";
-                        WriteData(chatId, fileName, data);
-                        addedArcans.Add(obj);
-
-                        bool isFirstCom = true;
-                        foreach (short obj2 in Arcs)
+                        TaroArcans arcan = arcansManager[chatId].GetArcan(num);
+                        string data = (rep != 1) ? $"{count}) {arcan.Name} ({rep}) " : $"{count}) {arcan.Name} ";
+                        if (MyDestiny.ContainsKey(num))
                         {
-                            if ((repeats[obj] > 1 || (repeats[obj] == 1 && obj2 != obj)) && repeats.ContainsKey(obj2))
-                            {
-                                string combinationKey = $"{obj}-{obj2}";
-                                if (arcansManager[chatId].Combinations.ContainsKey(combinationKey) && !addedCombinations.Contains(combinationKey))
-                                {
-                                    string dataAdd = $"   {arcansManager[chatId].Combinations[combinationKey]}";
-                                    WriteData(chatId, fileName, dataAdd);
-                                    addedCombinations.Add(combinationKey);
-                                    isFirstCom = false;
-                                }
-                            }
-                            foreach (short obj3 in Arcs)
-                            {
-                                if ((repeats[obj] > 1 || (repeats[obj] == 1 && obj2 != obj)) && repeats.ContainsKey(obj2)
-                                    && ((repeats[obj] > 1 && (obj2 == obj || obj == obj3)) || (repeats[obj2] > 1 && (obj2 == obj || obj2 == obj3)) || (repeats[obj] == 1 && obj3 != obj && obj3 != obj2 && obj != obj2)) && repeats.ContainsKey(obj3))
-                                {
-                                    string combinationKey = $"{obj}-{obj2}-{obj3}";
-                                    if (arcansManager[chatId].Combinations.ContainsKey(combinationKey) && !addedCombinations.Contains(combinationKey))
-                                    {
-                                        string dataAdd = $"   {arcansManager[chatId].Combinations[combinationKey]}";
-                                        WriteData(chatId, fileName, dataAdd);
-                                        addedCombinations.Add(combinationKey);
-                                    }
-                                }
-                                foreach (short obj4 in Arcs)
-                                {
-                                    if ((repeats[obj] > 1 || (repeats[obj] == 1 && obj2 != obj)) && repeats.ContainsKey(obj2)
-                     && ((repeats[obj] > 1 && (obj2 == obj || obj == obj3)) || (repeats[obj2] > 1 && (obj2 == obj || obj2 == obj3)) || (repeats[obj] == 1 && obj3 != obj && obj3 != obj2 && obj != obj2)) && repeats.ContainsKey(obj3)
-&& (((repeats[obj] > 1 && repeats[obj] < 4) && (obj2 == obj || obj == obj3 || obj == obj4)) || ((repeats[obj2] > 1 && repeats[obj2] < 4) && (obj2 == obj || obj2 == obj3 || obj2 == obj4)) || ((repeats[obj3] > 1 && repeats[obj3] < 4) && (obj3 == obj || obj2 == obj3 || obj3 == obj4)) || (repeats[obj] == 1 && obj4 != obj && obj3 != obj2 && obj4 != obj2) || repeats[obj] == 4) && repeats.ContainsKey(obj4))
-                                    {
-                                        string combinationKey = $"{obj}-{obj2}-{obj3}-{obj4}";
-                                        if (arcansManager[chatId].Combinations.ContainsKey(combinationKey) && !addedCombinations.Contains(combinationKey))
-                                        {
-                                            string dataAdd = $"   {arcansManager[chatId].Combinations[combinationKey]}";
-                                            WriteData(chatId, fileName, dataAdd);
-                                            addedCombinations.Add(combinationKey);
-                                        }
-                                    }
-                                }
-                            }
+                            data += $"- {GetDensity} \r\n ";
+                            StateMachine.WriteData(chatId, fileName, data);
+                            addedArcans.Add(num);
+                            count++;
                         }
                     }
                 }
             }
-            WriterAddition writer = new WriterAddition(fileName, arcansManager);
-            writer.WriteMyDestiny(chatId);
-            writer.WriteKarma(chatId);
-            writer.WriteGift(chatId);
         }
-       
-        
-        public static Dictionary<short, short> CountingReps(short[] nums)
+        public string GetDensity(short key)
         {
-            Dictionary<short, short> countMap = new Dictionary<short, short>();
-            foreach (short num in nums)
+            if (MyDestiny.ContainsKey(key))
             {
-                if (countMap.ContainsKey(num))
-                {
-                    countMap[num]++;
-                }
-                else
-                {
-                    countMap[num] = 1;
-                }
+                return MyDestiny[key];
             }
-            return countMap;
+            else
+            {
+                return null;
+            }
         }
-        public void WriteInstructions(long chatId)
+        public string GetKarma(short key)
         {
-            string instructions = $"Правила работы с информацией.\r\n\r\n   По дате рождения я рассчитываю 9 арканов человека, соответствующих его дате рождения и влияющих на его личность всю жизнь.\r\n\r\n   Каждый аркан - одна из 9 частей личности, собирающаяся в итоге в уникальность отдельно взятого человека.\r\n\r\n   У каждого аркана есть уровни отработки. Большинство арканов я делю на “плюсовую отработку” и “минусовую”, хотя есть арканы с многоуровневой отработкой.\r\n    Плюсовая - это то, как НАДО отрабатывать аркан, чтобы кармические последствия были только положительными.\r\n\r\n   Минусовая влечёт за собой отрицательные кармические последствия (болезни, повторяющиеся негативные ситуации, токсичные эмоции, сложные отношения с людьми, внезапные потери денег и тп, и тд).\r\n\r\n   “Люди-архетипы аркана” - те, кто является наиболее ярким носителем аркана. Например, у аркана Суд это будет гробовщик или психоаналитик, у Иерофанта - священнослужитель (истинный, не те, что сейчас в церквях), у Императрицы - Мать с большой буквы.\r\n\r\n   ПРОФЕССИЯ.\r\n   {_Name[chatId]}, Вы можете выбрать ЛЮБУЮ профессию ЛЮБОГО аркана, ниже перечисленного*, НО!\r\n   Вы должны понимать и стремиться к тому, чтобы остальные арканы покрывали выбранную деятельность. Чтобы не было выпадания какого-то аркана, иначе он автоматически уйдет в негатив.\r\n\r\n   Также я не сторонник того, чтобы профессию выбрать по четырем-пяти арканам, а хобби - по оставшимся, поскольку начнется раздвоение деятельности, влияющее негативно на сознание: работу я ненавижу, но и хобби тоже (что-то в этом духе).\r\n*если иное не указано в тексте.\r\n";
-            WriteData(chatId, fileName, instructions);
+            if (Karma.ContainsKey(key))
+            {
+                return Karma[key];
+            }
+            else
+            {
+                return null;
+            }
         }
-        
-        public static void WriteData(long chatId, string fileName, string data)// в будущем сделай интерфейсом
+        public string GetGift(short key)
         {
-            Console.WriteLine(data);
-            processor[chatId].WriteToFile(fileName, data);
-            processor[chatId].AddFormattedText(data, boldWords);
+            if (Gifts.ContainsKey(key))
+            {
+                return Gifts[key];
+            }
+            else
+            {
+                return null;
+            }
         }
-        public void WriteData(string fileName, string data, WordFileProcessor processor)// в будущем сделай интерфейсом
+        public void WriteKarma(long chatId)
         {
-            Console.WriteLine(data);
-            processor.WriteToFile(fileName, data);
-            processor.AddFormattedText(data, boldWords);
+            if (Karma.ContainsKey(StateMachine.Arcs[3]))
+            {
+                string data = $"\r\nКарма Предназначения \r\n {GetKarma(StateMachine.Arcs[3])} \r\n\r\n ";
+                StateMachine.WriteData(chatId, fileName, data);
+            }
+        }
+
+        public void WriteGift(long chatId)
+        {
+            if (Gifts.ContainsKey(StateMachine.Arcs[4]))
+            {
+                string data = $"Дар Презназначения \r\n {GetGift(StateMachine.Arcs[4])} ";
+                StateMachine.WriteData(chatId, fileName, data);
+            }
         }
     }
 }

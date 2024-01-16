@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FiendMagicDestiny_bot
+﻿namespace FiendMagicDestiny_bot
 {
      class MessageResponses
     {
         public static KeyboardButton Add => new KeyboardButton("Новое предназначение");
+        public static KeyboardButton AddForYear => new KeyboardButton("Новый прогноз на год");
         public static KeyboardButton Edit => new KeyboardButton("Изменить");
         public static KeyboardButton Save => new KeyboardButton("Сохранить");
         public static KeyboardButton GenderM => new KeyboardButton("👨Мужчина");
