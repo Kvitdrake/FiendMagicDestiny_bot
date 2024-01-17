@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace FiendMagicDestiny_bot
 {
     internal class WriterAddition
@@ -83,36 +78,31 @@ namespace FiendMagicDestiny_bot
             [21] = "человек должен выработать в себе такие черты характера как толерантность, мягкость, открытость для всего нового и необычного. На другом уровне в случае этой карты речь идёт об избавлении от комплексов и торможений, открытости энергиям, которые приходят из внешнего мира, а также радости от осознания, что мир так богат и разнообразен. Задание такого человека заключается в контактах с иностранцами, внедрении технических (и не только) инноваций, стремлении к объединению людей разных культурных кругов, традиций и говорящих на разных языках. Такой человек должен стать «гражданином мира» и подняться над разного рода расовыми, националистическими, родовыми и другими разделениями. К сожалению, именно здесь мы чаще всего сталкиваемся с такими ошибками, как невежество, ксенофобия, возношение своей расы, нации, социальной группы над другими, а также отсталость, цепляние за стереотипы и отсутствие толерантности. Многие люди с правильно проработанным Миром становятся полиглотами, путешественниками, экспертами по далёким культурам или просто современными, толерантными и доброжелательными людьми.",
             [22] = "Предназначение"
         };
-        private Dictionary<long, ArcansManager> arcansManager;
-        private string fileName;
-        public WriterAddition(string fileName, Dictionary<long, ArcansManager> arcanManadger)
+        public WriterAddition()
         {
-            arcanManadger = this.arcansManager;
-            fileName = this.fileName;
         }
         public void WriteMyDestiny(long chatId)
         {
-            Dictionary<short, short> repeats = StateMachine.CountingReps(StateMachine.Arcs);
             HashSet<short> addedArcans = new HashSet<short>();
             short count = 1;
             short[] Arc = new short[] { StateMachine.Arcs[0], StateMachine.Arcs[1], StateMachine.Arcs[2] };
 
             string mainData = $"Моё Предназначение: \r\n";
-            StateMachine.WriteData(chatId, fileName, mainData);
+            StateMachine.WriteData(chatId, StateMachine.fileName[chatId], mainData);
 
             foreach (var num in Arc)
             {
-                if (repeats.ContainsKey(num))
+                if (StateMachine.repeats.ContainsKey(num))
                 {
-                    short rep = repeats[num];
+                    short rep = StateMachine.repeats[num];
                     if (!addedArcans.Contains(num))
                     {
-                        TaroArcans arcan = arcansManager[chatId].GetArcan(num);
+                        TaroArcans arcan = StateMachine.arcansManager[chatId].GetArcan(num);
                         string data = (rep != 1) ? $"{count}) {arcan.Name} ({rep}) " : $"{count}) {arcan.Name} ";
                         if (MyDestiny.ContainsKey(num))
                         {
                             data += $"- {GetDensity} \r\n ";
-                            StateMachine.WriteData(chatId, fileName, data);
+                            StateMachine.WriteData(chatId, StateMachine.fileName[chatId], data);
                             addedArcans.Add(num);
                             count++;
                         }
@@ -158,7 +148,7 @@ namespace FiendMagicDestiny_bot
             if (Karma.ContainsKey(StateMachine.Arcs[3]))
             {
                 string data = $"\r\nКарма Предназначения \r\n {GetKarma(StateMachine.Arcs[3])} \r\n\r\n ";
-                StateMachine.WriteData(chatId, fileName, data);
+                StateMachine.WriteData(chatId, StateMachine.fileName[chatId], data);
             }
         }
 
@@ -166,8 +156,8 @@ namespace FiendMagicDestiny_bot
         {
             if (Gifts.ContainsKey(StateMachine.Arcs[4]))
             {
-                string data = $"Дар Презназначения \r\n {GetGift(StateMachine.Arcs[4])} ";
-                StateMachine.WriteData(chatId, fileName, data);
+                string data = $"Дар Предназначения \r\n {GetGift(StateMachine.Arcs[4])} ";
+                StateMachine.WriteData(chatId, StateMachine.fileName[chatId], data);
             }
         }
     }
