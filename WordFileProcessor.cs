@@ -19,6 +19,18 @@ namespace FiendMagicDestiny_bot
         {
             wordApp = new Application();
             doc = wordApp.Documents.Add();
+            // Устанавливаем стиль шрифта и размер
+            doc.Content.Font.Name = "Times New Roman";
+            doc.Content.Font.Size = 12;
+            // Устанавливаем выравнивание по ширине
+            //doc.Paragraphs.Alignment = WdParagraphAlignment.wdAlignParagraphJustify;
+            doc.Paragraphs.SpaceAfter = 0;
+            doc.Paragraphs.SpaceBefore = 0;
+            doc.Paragraphs.LineSpacingRule = WdLineSpacing.wdLineSpaceSingle;
+
+            
+
+            //doc.Paragraphs.Mirrorlindents
         }
         public void WriteToFile(string fileName, string data)
         {
@@ -31,12 +43,15 @@ namespace FiendMagicDestiny_bot
         }
         public void AddFormattedText(string text, string[] formattedWords)
         {
-            Paragraph paragraph = doc.Content.Paragraphs.Add(); //вот тут на второй раз возникает ошибка  "Object reference not set to an instance of an object"
+            Paragraph paragraph = doc.Content.Paragraphs.Add();             
             paragraph.Range.Text = text;
+            
+            paragraph.Range.ParagraphFormat.FirstLineIndent = wordApp.InchesToPoints(0.4f);
             foreach (string word in formattedWords)
             {
                 Find find = paragraph.Range.Find;
                 find.Text = word;
+
                 find.Replacement.Text = word;
                 find.Font.Bold = 1;
                 find.Execute(Replace: WdReplace.wdReplaceAll);
@@ -97,7 +112,6 @@ namespace FiendMagicDestiny_bot
                 await botClient.SendDocumentAsync(chatId, inputFile);
             }
         }
-
         public void DeleteFile(string fileName)
         {
             var filePath = Path.Combine(Environment.CurrentDirectory, fileName);
@@ -105,5 +119,7 @@ namespace FiendMagicDestiny_bot
                 System.IO.File.Delete(filePath);
 
         }
+
+        
     }
 }
