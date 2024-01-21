@@ -11,6 +11,8 @@ namespace FiendMagicDestiny_bot
         private protected static Dictionary<long, string> _Addition;
         public static short[] Arcs;
         public static Dictionary<long, string> fileName;
+        public static Dictionary<long, string> fileName2;
+
         //private protected static string fileName2;
         private static Dictionary<long, WordFileProcessor> processor;
         private static Dictionary<long, WordFileProcessor> processor2;
@@ -26,6 +28,7 @@ namespace FiendMagicDestiny_bot
             _Gender = new Dictionary<long, string>();
             _Addition = new Dictionary<long, string>();
             fileName = new Dictionary<long, string>();
+            fileName2 = new Dictionary<long, string>();
             processor = new Dictionary<long, WordFileProcessor>();
             processor2 = new Dictionary<long, WordFileProcessor>();
             arcansManager = new Dictionary<long, ArcansManager>();
@@ -48,6 +51,14 @@ namespace FiendMagicDestiny_bot
             else
                 processor.Add(chatId, name);
         }
+        public void SaveProcessor2(long chatId, WordFileProcessor name)
+        {
+            if (processor2.ContainsKey(chatId))
+                processor2[chatId] = name;
+            else
+                processor2.Add(chatId, name);
+        }
+
         public void SaveArcManager(long chatId, ArcansManager name)
         {
             if (arcansManager.ContainsKey(chatId))
@@ -62,6 +73,14 @@ namespace FiendMagicDestiny_bot
             else
                 fileName.Add(chatId, name);
         }
+        public void SaveFileName2(long chatId, string name)
+        {
+            if (fileName2.ContainsKey(chatId))
+                fileName2[chatId] = name;
+            else
+                fileName2.Add(chatId, name);
+        }
+
         public void SaveName(long chatId, string name)
         {
             if (_Name.ContainsKey(chatId))
@@ -99,6 +118,8 @@ namespace FiendMagicDestiny_bot
                 _Addition.Remove(chatId);
             if (fileName.ContainsKey(chatId))
                 fileName.Remove(chatId);
+            if (fileName2.ContainsKey(chatId))
+                fileName2.Remove(chatId);
             if (processor.ContainsKey(chatId))
                 processor.Remove(chatId);
             if (processor2.ContainsKey(chatId))
@@ -144,23 +165,22 @@ namespace FiendMagicDestiny_bot
         }
         public async Task SendAddition(ITelegramBotClient botClient, long chatId)
         {
-            //fileName2 = $"ДОПОЛНЕНИЕ: {StateMachine._Name[chatId]}_Предназначение.doc";
-            string data = $"\r\n\r\n\r\n    Дополнение: \r\n {_Addition[chatId]}";
-            //WordFileProcessor processor2 = new WordFileProcessor();
+            fileName2[chatId] = $"ДОПОЛНЕНИЕ: {StateMachine._Name[chatId]}_Предназначение.doc";
+            string data = $"\r\n\r\n\r\n    Дополнение: \r\n {_Addition[chatId]}"; //где-то теряется имя нормальное и не находится файл по пути
             processor[chatId].delParagraph = true;
-            // processor2[chatId].delParagraph = true;
+            processor2[chatId].delParagraph = true;
 
             WriteData(chatId, fileName[chatId], data);
-            // WriteData( fileName2, data, processor2[chatId]);
+            WriteData( fileName2[chatId], data, processor2[chatId]);
 
             processor[chatId].SaveAndClose(fileName[chatId]);
-            //            processor2[chatId].SaveAndClose(fileName2);
+            processor2[chatId].SaveAndClose(fileName2[chatId]);
 
             await processor[chatId].SendingFile(botClient, chatId, fileName[chatId]);
-            //          await processor2[chatId].SendingFile(botClient, chatId, fileName2);
+            await processor2[chatId].SendingFile(botClient, chatId, fileName2[chatId]);
 
             processor[chatId].DeleteFile(fileName[chatId]);
-            //        processor2[chatId].DeleteFile(fileName2);
+            processor2[chatId].DeleteFile(fileName2[chatId]);
 
         }
         public void BuilderList(long chatId)
@@ -275,7 +295,7 @@ namespace FiendMagicDestiny_bot
             processor[chatId].WriteToFile(fileName, data);
             processor[chatId].AddFormattedText(data, boldWords);
         }
-        public void WriteData(string fileName, string data, WordFileProcessor processor)// в будущем сделай интерфейсом
+        public static void WriteData(string fileName, string data, WordFileProcessor processor)// в будущем сделай интерфейсом
         {
             Console.WriteLine(data);
             processor.WriteToFile(fileName, data);

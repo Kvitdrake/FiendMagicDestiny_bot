@@ -62,7 +62,7 @@ namespace Fiend.Magic_bot
                             case State.Name:
                                 _stateMachine.SaveName(chatId, message.Text);
                                 _stateMachine.SaveFileName(chatId, $"{StateMachine._Name[chatId]}_Предназначение.doc");
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Замечательно, теперь ввыбери пол", replyMarkup: replyKeyboardMarkup1);
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Замечательно, теперь выбери пол", replyMarkup: replyKeyboardMarkup1);
                                 _stateMachine.SetState(chatId, State.Gender);
                                 break;
                             case State.Gender:
@@ -70,6 +70,9 @@ namespace Fiend.Magic_bot
                                 await botClient.SendTextMessageAsync(message.Chat.Id, "Отлично. Данные человека у меня есть, присылай арканы (через пробел), пожалуйста)", replyMarkup: new ReplyKeyboardRemove());
                                 _stateMachine.SaveArcManager(chatId, new ArcansManager());
                                 _stateMachine.SetState(chatId, State.TarotCard);
+
+                                _stateMachine.SaveProcessor2(chatId, new WordFileProcessor());
+                                _stateMachine.SaveFileName2(chatId, $"ДОПОЛНЕНИЕ: {StateMachine._Name[chatId]}_Предназначение.doc");
                                 break;
                             case State.TarotCard:
                                 try
