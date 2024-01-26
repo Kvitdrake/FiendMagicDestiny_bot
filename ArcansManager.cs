@@ -68,7 +68,7 @@ namespace FiendMagicDestiny_bot
         }
 
         public string indent = "\r\n\r\n";
-        public void WriteComb() //проверь то, как работает 1 15 5 \\ 1 13 15 5
+        public void WriteComb() 
         {
             AddCombination(1, 8, $"Правосудие и Маг - *описание*");
             AddCombination(1, 3, $"Маг и Императрица - *описание*");
