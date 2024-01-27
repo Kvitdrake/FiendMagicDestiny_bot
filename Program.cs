@@ -25,7 +25,7 @@ namespace Fiend.Magic_bot
     {
         public static void Main()
         {
-            var client = new TelegramBotClient("5900251255:AAFBjbPWnvf3BgEHKh58XdWx0Thxsj9Z_fQ");
+            var client = new TelegramBotClient("TOKEN");
             client.StartReceiving(Update, Error);
             Console.ReadLine();
         }
@@ -43,12 +43,12 @@ namespace Fiend.Magic_bot
                     if (_stateMachine == null)
                         _stateMachine = new StateMachine();
 
-                    if (message.Text == "/start" && (chatId == 1002093832 || chatId == 184789122 || chatId == 5797888011))
+                    if (message.Text == "/start" && (chatId == *chanid1* || chatId == *chanid4* || chatId == *chanid3*)) //мой и 2 - заказчика
                     {
                         FirstShow(botClient, update, token);
 
                     }
-                    if (chatId == 1002093832 || chatId == 184789122 || chatId == 5797888011)
+                    if (chatId == *chanid1* || chatId == *chanid2* || chatId == *chanid3*)
                     {
                         var replyKeyboardMarkup1 = new ReplyKeyboardMarkup(new[]
                                     {
@@ -62,7 +62,7 @@ namespace Fiend.Magic_bot
                         {
 
                             case State.None:
-                                await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, дату рождения, тг для связи, а потом просто через пробел все арканы человека. \n\r Жду имя)");
+                                await botClient.SendTextMessageAsync(message.Chat.Id, "Введи отдельными сообщениями сначала имя, дату рождения, тг для связи, а потом просто через пробел все арканы человека. \n\r Жду имя)"); //В дальнейшем изменилось в силу большей читаемости
                                 _stateMachine.SetState(chatId, State.Name);
                                 break;
                             case State.Name:
@@ -79,8 +79,8 @@ namespace Fiend.Magic_bot
                                 try
                                 {
                                     await botClient.SendTextMessageAsync(message.Chat.Id, "Пожалуйста, подожди несколько секунд и все будет готово.");
-                                    _stateMachine.TransformationString(chatId, message.Text); //
-                                    _stateMachine.BuilderList(chatId); //?
+                                    _stateMachine.TransformationString(chatId, message.Text); 
+                                    _stateMachine.BuilderList(chatId); 
                                     await botClient.SendTextMessageAsync(message.Chat.Id, "Всё идет по плану, я уже наклепал файлик. Напиши свое дополнение и всё будет готово.");
 
                                     _stateMachine.SetState(chatId, State.Add);
@@ -104,7 +104,6 @@ namespace Fiend.Magic_bot
                                 _stateMachine.SetState(chatId, State.None);
 
                                 break;
-
                         }
                     }
                     else
@@ -135,7 +134,6 @@ namespace Fiend.Magic_bot
         Date_birth, // введи контакт
         Gender,
         TarotCard, // 
-        Add,
-        Finish //
+        Add
     }
 }
