@@ -25,7 +25,7 @@ namespace Fiend.Magic_bot
     {
         public static void Main()
         {
-            var client = new TelegramBotClient("5900251255:AAFBjbPWnvf3BgEHKh58XdWx0Thxsj9Z_fQ");
+            var client = new TelegramBotClient("TOKEN");
             client.StartReceiving(Update, Error);
             Console.ReadLine();
         }
@@ -43,12 +43,12 @@ namespace Fiend.Magic_bot
                     if (_stateMachine == null)
                         _stateMachine = new StateMachine();
 
-                    if (message.Text == "/start" && (chatId == 1002093832 || chatId == 184789122 || chatId == 5797888011))
+                    if (message.Text == "/start" && (chatId == *chanid1* || chatId == *chanid4* || chatId == *chanid3*)) //мой и 2 - заказчика
                     {
                         FirstShow(botClient, update, token);
 
                     }
-                    if (chatId == 1002093832 || chatId == 184789122 || chatId == 5797888011)
+                    if (chatId == *chanid1* || chatId == *chanid2* || chatId == *chanid3*)
                     {
                         var replyKeyboardMarkup1 = new ReplyKeyboardMarkup(new[]
                                     {
@@ -135,7 +135,6 @@ namespace Fiend.Magic_bot
         Date_birth, // введи контакт
         Gender,
         TarotCard, // 
-        Add,
-        Finish //
+        Add
     }
 }
