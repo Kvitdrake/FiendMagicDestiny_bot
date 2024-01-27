@@ -13,7 +13,7 @@ namespace Fiend.Magic_bot
     {
         public static void Main()
         {
-            var client = new TelegramBotClient("5900251255:AAFBjbPWnvf3BgEHKh58XdWx0Thxsj9Z_fQ");
+            var client = new TelegramBotClient("TOKEN");
             client.StartReceiving(Update, Error);
             Console.ReadLine();
         }
@@ -29,12 +29,12 @@ namespace Fiend.Magic_bot
                     if (_stateMachine == null)
                         _stateMachine = new StateMachine();
 
-                    if (message.Text == "/start" && (chatId == 1002093832 || chatId == 184789122 || chatId == 5797888011))
+                   if (message.Text == "/start" && (chatId == *chanid1* || chatId == *chanid4* || chatId == *chanid3*)) //мой и 2 - заказчика
                     {
                         FirstShow(botClient, update, token);
 
                     }
-                    if (chatId == 1002093832 || chatId == 184789122 || chatId == 5797888011)
+                    if (chatId == *chanid1* || chatId == *chanid2* || chatId == *chanid3*)
                     {
                         var replyKeyboardMarkup1 = new ReplyKeyboardMarkup(new[]
                                     {
@@ -134,7 +134,7 @@ namespace Fiend.Magic_bot
                                             MessageResponses.AddForYear
                                         }
                                     });
-            await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения ❤️ ✨ \r\n По вопросам - @soltias ", replyMarkup: replyKeyboardMarkup2);
+            await botClient.SendTextMessageAsync(message.Chat.Id, "Твой персональный помощник для рассчёта предназначения\r\n По вопросам - @soltias ", replyMarkup: replyKeyboardMarkup2);
         }
         private static string RandomName()
         {
@@ -142,10 +142,8 @@ namespace Fiend.Magic_bot
             int i = random.Next(1, 4);
             Dictionary<int, string> name = new Dictionary<int, string>()
             {
-                {1, "Маша" },
-                {2, "Королева белок" },
-                {3, "Марганец" },
-                {4, "Мартиша" }
+                {1, "Имя1" },
+                //остальные обращения
             };
                 return name[i];
         }
