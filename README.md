@@ -18,6 +18,6 @@ Although I wrote above that the whole project was not for display, but at the la
 ### You can test it by downloading the project or by following the link (although you will be able to see only one function, but what can you do) - @FiendMagicDestiny_bot
 
 Contacts:
-telegram: @soltias
-VK: https://m.vk.com/effremsol
-HeadHunter: https://stavropol.hh.ru/resume/c4f8f964ff0bd036f00039ed1f747343554f64?hhtmFrom=resume_list
+- Telegram: @soltias
+- VK: https://m.vk.com/effremsol
+- HeadHunter: https://stavropol.hh.ru/resume/c4f8f964ff0bd036f00039ed1f747343554f64?hhtmFrom=resume_list
