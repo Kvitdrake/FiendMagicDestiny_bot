@@ -23,7 +23,7 @@ namespace FiendMagicDestiny_bot
             doc.Content.Font.Name = "Times New Roman";
             doc.Content.Font.Size = 12;
             // Устанавливаем выравнивание по ширине
-            //doc.Paragraphs.Alignment = WdParagraphAlignment.wdAlignParagraphJustify;
+            doc.Paragraphs.Alignment = WdParagraphAlignment.wdAlignParagraphJustify;
             doc.Paragraphs.SpaceAfter = 0;
             doc.Paragraphs.SpaceBefore = 0;
             doc.Paragraphs.LineSpacingRule = WdLineSpacing.wdLineSpaceSingle;
